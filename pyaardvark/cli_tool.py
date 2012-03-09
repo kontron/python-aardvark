@@ -130,7 +130,7 @@ def main():
             cmd_i2c(a, args[1:])
         else:
             pass
-    except e:
+    except Exception, e:
         print e
     finally:
         a.close()
