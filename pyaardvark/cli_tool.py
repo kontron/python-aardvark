@@ -4,6 +4,7 @@
 #
 
 import sys
+import time
 import logging
 from optparse import OptionParser
 
@@ -66,6 +67,59 @@ def cmd_i2c(a, args):
         data = a.i2c_master_write_read(i2c_address, data, length)
         print ' '.join('%02x' % ord(c) for c in data)
 
+def adt7420_usage():
+    print "adt7420 <addr>"
+
+def cmd_adt7420(a, args):
+    if len(args) < 1:
+        adt7420_usage()
+        sys.exit(1)
+
+    i2c_address = int(args[0], 0)
+
+    data = a.i2c_master_write_read(i2c_address, '\x00', 2)
+
+    temp = ord(data[0]) << 5
+    temp |= ord(data[1]) >> 3
+
+    if (temp & 0x1000):
+        temp -= 8192
+    print "%f (0x%02x%02x)" % (temp / 16.0, ord(data[0]), ord(data[1]))
+
+def adt7411_usage():
+    print "adt7411 <addr> enable"
+    print "adt7411 <addr> int_diode"
+    print "adt7411 <addr> ext_diode"
+
+def cmd_adt7411(a, args):
+    if len(args) < 2:
+        adt7411_usage()
+        sys.exit(1)
+
+    i2c_address = int(args[0], 0)
+
+    if args[1] == 'enable':
+        a.i2c_master_write(i2c_address, '\x18\x0d')
+        return
+    elif args[1] == 'int_diode':
+        lsb = a.i2c_master_write_read(i2c_address, '\x03', 1)
+        msb = a.i2c_master_write_read(i2c_address, '\x07', 1)
+    elif args[1] == 'ext_diode':
+        lsb = a.i2c_master_write_read(i2c_address, '\x04', 1)
+        msb = a.i2c_master_write_read(i2c_address, '\x08', 1)
+    else:
+        adt7411_usage()
+        sys.exit(1)
+
+    raw = ord(msb) << 2
+    raw |= ord(lsb) & 0x3
+
+    if (raw & 0x200):
+        temp = raw - 1024
+    else:
+        temp = raw
+    print "%f (0x%04x)" % (temp / 4.0, raw)
+
 def main():
     usage = 'usage: %prog [options] <cmd> [..]'
     parser = OptionParser(usage=usage)
@@ -102,7 +156,7 @@ def main():
 
     cmd = args[0]
 
-    if cmd not in ('i2c', 'scan'):
+    if cmd not in ('i2c', 'adt7411', 'adt7420', 'scan'):
         print 'unknown command %s' % cmd
         sys.exit(1)
 
@@ -123,11 +177,16 @@ def main():
 
         a.enable_target_power(options.enable_target_power)
 
-        if cmd == 'i2c':
+        if cmd in ('i2c', 'adt7411', 'adt7420'):
             a.configure(Aardvark.CONFIG_SPI_I2C)
             a.i2c_enable_pullups(options.enable_i2c_pullups)
             a.i2c_bitrate(options.bitrate)
+        if cmd == 'i2c':
             cmd_i2c(a, args[1:])
+        elif cmd == 'adt7411':
+            cmd_adt7411(a, args[1:])
+        elif cmd == 'adt7420':
+            cmd_adt7420(a, args[1:])
         else:
             pass
     except Exception, e:
