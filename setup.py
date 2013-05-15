@@ -5,9 +5,6 @@ from subprocess import Popen, PIPE
 
 def get_git_version():
     try:
-        # Somehow git describe is confused if fakeroot is used. The command
-        # below seems to work around that. I really don't have any clue :(
-        Popen(['git', 'diff']).wait()
         p = Popen(['git', 'describe', '--tags', '--always', '--dirty'],
                 stdout=PIPE, stderr=PIPE)
         p.stderr.close()

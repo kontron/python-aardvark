@@ -2,8 +2,9 @@ Source: pyaardvark
 Section: python
 Priority: optional
 Maintainer: Michael Walle <michael.walle@kontron.com>
-Build-Depends: debhelper (>= 7.3.5), python-all-dev, python-support (>= 0.7.2)
+Build-Depends: debhelper (>= 7.3.5), python-all-dev (>=2.6.6-3~)
 Standards-Version: 3.8.2
+X-Python-Version: >= 2.6
 
 Package: python-aardvark
 Architecture: i386
