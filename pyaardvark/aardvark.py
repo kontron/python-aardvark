@@ -102,7 +102,6 @@ class Aardvark:
     CONFIG_GPIO_I2C = 0x02
     CONFIG_SPI_I2C = 0x03
     CONFIG_QUERY = 0x80
-
     def configure(self, config):
         """Configure the device.
 
@@ -112,14 +111,14 @@ class Aardvark:
         ret = api.py_aa_configure(self._handle, config)
         if ret < 0:
             raise IOError(Aardvark._error_to_string(ret))
-        
+
     def i2c_bitrate(self, khz):
         """Set the I2C bitrate."""
 
         ret = api.py_aa_i2c_bitrate(self._handle, khz)
         if ret < 0:
             raise IOError(Aardvark._error_to_string(ret))
-    
+
     I2C_PULLUP_NONE = 0x00
     I2C_PULLUP_BOTH = 0x03
     I2C_PULLUP_QUERY = 0x80
@@ -245,3 +244,55 @@ class Aardvark:
             raise IOError(Aardvark._error_to_string(ret))
         del data[ret:]
         return (slave_addr, data.tostring())
+
+    def spi_bitrate(self, khz):
+        """Set the SPI bitrate."""
+        ret = api.py_aa_spi_bitrate(self._handle, khz)
+        if ret < 0:
+            raise IOError(Aardvark._error_to_string(ret))
+
+    SPI_POL_RISING_FALLING = 0
+    SPI_POL_FALLING_RISING = 1
+    SPI_PHASE_SAMPLE_SETUP = 0
+    SPI_PHASE_SETUP_SAMPLE = 1
+    SPI_BITORDER_MSB = 0
+    SPI_BITORDER_LSB = 1
+    def spi_configure(self, polarity, phase, bitorder):
+        """Configure the SPI interface."""
+        ret = api.py_aa_spi_configure(self._handle, polarity, phase, bitorder)
+        if ret < 0:
+            raise IOError(Aardvark._error_to_string(ret))
+
+    SPI_MODE_0 = 0
+    SPI_MODE_3 = 3
+    def spi_configure_mode(self, spi_mode):
+        """Configure the SPI interface by the well known SPI modes."""
+        if spi_mode == self.SPI_MODE_0:
+            self.spi_configure(self.SPI_POL_RISING_FALLING,
+                    self.SPI_PHASE_SAMPLE_SETUP, self.SPI_BITORDER_MSB)
+        elif spi_mode == self.SPI_MODE_3:
+            self.spi_configure(self.SPI_POL_FALLING_RISING,
+                    self.SPI_PHASE_SETUP_SAMPLE, self.SPI_BITORDER_MSB)
+        else:
+            raise RuntimeError('SPI Mode not supported')
+
+    def spi_write(self, data):
+        "Write a stream of bytes to a SPI device."""
+        data_out = array.array('B', data)
+        data_in = array.array('B', (0,) * len(data_out))
+        ret = api.py_aa_spi_write(self._handle, len(data_out), data_out,
+                len(data_in), data_in)
+        if ret < 0:
+            raise IOError(Aardvark._error_to_string(ret))
+        return data_in.tostring()
+
+    SPI_SS_ACTIVE_LOW = 0
+    SPI_SS_ACTIVE_HIGH = 1
+    def spi_ss_polarity(self, polarity):
+        """Change the ouput polarity on the SS line.
+
+        Please note, that this only affects the master functions.
+        """
+        ret = api.py_aa_spi_master_ss_polarity(self._handle, polarity)
+        if ret < 0:
+            raise IOError(Aardvark._error_to_string(ret))

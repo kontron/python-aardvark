@@ -67,6 +67,25 @@ def cmd_i2c(a, args):
         data = a.i2c_master_write_read(i2c_address, data, length)
         print ' '.join('%02x' % ord(c) for c in data)
 
+def spi_usage():
+    print """
+spi <data> [<data>..]
+"""[1:-1]
+
+def cmd_spi(a, args):
+    if len(args) < 1:
+        spi_usage()
+        sys.exit(1)
+
+    try:
+        data = ''.join('%c' % chr(int(c, 0)) for c in args)
+    except ValueError:
+        print 'could not convert arguments'
+        sys.exit(1)
+
+    data = a.spi_write(data)
+    print ' '.join('%02x' % ord(c) for c in data)
+
 def adt7420_usage():
     print "adt7420 <addr>"
 
@@ -156,7 +175,7 @@ def main():
 
     cmd = args[0]
 
-    if cmd not in ('i2c', 'adt7411', 'adt7420', 'scan'):
+    if cmd not in ('i2c', 'spi', 'adt7411', 'adt7420', 'scan'):
         print 'unknown command %s' % cmd
         sys.exit(1)
 
@@ -183,6 +202,11 @@ def main():
             a.i2c_bitrate(options.bitrate)
         if cmd == 'i2c':
             cmd_i2c(a, args[1:])
+        elif cmd == 'spi':
+            a.configure(Aardvark.CONFIG_SPI_I2C)
+            a.spi_configure_mode(Aardvark.SPI_MODE_3)
+            a.spi_bitrate(options.bitrate)
+            cmd_spi(a, args[1:])
         elif cmd == 'adt7411':
             cmd_adt7411(a, args[1:])
         elif cmd == 'adt7420':
