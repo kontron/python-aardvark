@@ -1,3 +1,9 @@
+pyaardvark (0.3-1) unstable; urgency=low
+
+  * SPI support
+
+ -- Michael Walle <michael.walle@kontron.com>  Fri, 06 Dec 2013 17:51:53 +0100
+
 pyaardvark (0.0.2-1) unstable; urgency=low
 
   * Python 2.7 support
