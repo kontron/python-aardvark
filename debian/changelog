@@ -1,3 +1,9 @@
+pyaardvark (0.4-1) unstable; urgency=low
+
+  * Improve API
+
+ -- Michael Walle <michael.walle@kontron.com>  Mon, 27 Jan 2014 13:19:39 +0100
+
 pyaardvark (0.3-1) unstable; urgency=low
 
   * SPI support
