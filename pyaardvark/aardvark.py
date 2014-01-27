@@ -87,7 +87,7 @@ class Aardvark:
         """Close the device."""
 
         api.py_aa_close(self._handle)
-        self._dev = None
+        self._handle = None
 
     def unique_id(self):
         """Return the unique identifier of the device.
@@ -96,6 +96,18 @@ class Aardvark:
         descriptor.
         """
         return api.py_aa_unique_id(self._handle)
+
+    def unique_id_str(self):
+        """Return the unique identifier of the device as a human readable
+        string.
+
+        The format is NNNN-NNNNNN, you should find the same format on the host
+        adapter.
+        """
+        unique_id = self.unique_id()
+        id1 = unique_id / 1000000
+        id2 = unique_id % 1000000
+        return '%d-%d' % (id1, id2)
 
     CONFIG_GPIO_ONLY = 0x00
     CONFIG_SPI_GPIO = 0x01
@@ -224,7 +236,7 @@ class Aardvark:
     POLL_I2C_MONITOR = 0x08
     def poll(self, timeout_ms):
         """Wait for an event to occur.
-        
+
         Returns a bitfield of event flags.
         """
         ret = api.py_aa_async_poll(self._handle, timeout_ms)
@@ -234,7 +246,7 @@ class Aardvark:
 
     def i2c_slave_read(self):
         """Read the bytes from an I2C slave reception.
-        
+
         The bytes are returns as an string object.
         """
         data = array.array('B', (0,) * self.BUFFER_SIZE)

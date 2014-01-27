@@ -183,10 +183,7 @@ def main():
         for port in Aardvark.find_devices():
             dev = Aardvark()
             dev.open(port)
-            id = dev.unique_id()
-            id1 = id / 1000000
-            id2 = id % 1000000
-            print "Device #%d: %d-%d" % (port, id1, id2)
+            print 'Device #%d: %s' % (port, dev.unique_id_str())
             dev.close()
         sys.exit(0)
 
