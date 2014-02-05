@@ -22,10 +22,21 @@ def main():
         f.write('__version__ = \'%s\'\n' % (version,))
 
     setup(name = 'pyaardvark',
-            version = get_git_version(),
+            version = version,
             description = 'Totalphase Aardvark library',
             author_email = 'michael.walle@kontron.com',
             packages = find_packages(),
+            license = 'LGPLv2+',
+            classifiers = [
+                'Development Status :: 4 - Beta',
+                'Environment :: Console',
+                'License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)',
+                'Natural Language :: English',
+                'Operating System :: OS Independent',
+                'Programming Language :: Python :: 2',
+                'Programming Language :: Python :: 2.7',
+                'Topic :: Software Development :: Libraries :: Python Modules',
+            ],
             package_data = {
                 'pyaardvark.ext':
                     ['aardvark.so', 'LICENSE.txt']
