@@ -15,8 +15,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 try:
-    from version import __version__
+    from .version import __version__
 except ImportError:
     __version__ = 'dev'
 
-from aardvark import Aardvark
+from .aardvark import Aardvark
