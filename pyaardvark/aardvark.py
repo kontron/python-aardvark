@@ -18,7 +18,13 @@ import time
 import array
 import logging
 
-import ext.aardvark as api
+try:
+    import ext.linux32.aardvark as api
+except ImportError:
+    try:
+        import ext.linux64.aardvark as api
+    except:
+        api = None
 
 log = logging.getLogger(__name__)
 
