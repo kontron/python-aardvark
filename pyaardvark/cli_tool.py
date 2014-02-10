@@ -21,7 +21,7 @@ import time
 import logging
 from optparse import OptionParser
 
-from pyaardvark import Aardvark
+import pyaardvark
 
 def i2c_usage():
     print """
@@ -193,16 +193,14 @@ def main():
         sys.exit(1)
 
     if cmd == 'scan':
-        for port in Aardvark.find_devices():
-            dev = Aardvark()
-            dev.open(port)
+        for port in pyaardvark.find_devices():
+            dev = pyaardvark.open(port)
             print 'Device #%d: %s' % (port, dev.unique_id_str())
             dev.close()
         sys.exit(0)
 
     try:
-        a = Aardvark()
-        a.open(options.device)
+        a = pyaardvark.open(options.device)
 
         a.enable_target_power(options.enable_target_power)
 

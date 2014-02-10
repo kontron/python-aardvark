@@ -18,6 +18,8 @@ import time
 import array
 import logging
 
+from .constants import *
+
 try:
     import ext.linux32.aardvark as api
 except ImportError:
@@ -28,82 +30,69 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+def error_string(error_number):
+    for k, v in globals().iteritems():
+        if k.startswith('ERR_') and v == error_number:
+            return k
+    else:
+        return 'ERR_UNKNOWN_ERROR'
+
+def find_devices(max_devices=16):
+    """Get a list of Aardvark devices.
+
+    Returns the port number which can be used to open an Aardvark device.
+    """
+
+    # api expects array of u16
+    devices = array.array('H', (0,) * max_devices)
+    ret = api.py_aa_find_devices(len(devices), devices)
+    if ret < 0:
+        raise IOError(error_string(ret))
+    del devices[ret:]
+    return devices
+
+def open(port=None, serial_number=None):
+    """Open an aardvark device.
+
+    The `port` can be retrieved by :func:find_devices. Usually, the first
+    device is 0, the second 1, etc.
+
+    If you are using only one device, you can therefore omit the parameter
+    in which case 0 is used.
+
+    Another method to open a device is to use the serial number. You can either
+    find the number on the device itself or in the in the corresponding USB
+    property. The serial number is a string which looks like ``NNNN-MMMMMMM`.
+    """
+    if port is None and serial_number is None:
+        dev = Aardvark()
+    elif serial_number is not None:
+        for port in find_devices():
+            dev = Aardvark(port)
+            if dev.unique_id_str() == serial_number:
+                break
+            dev.close()
+        else:
+            raise IOError("Device not found")
+    else:
+        dev = Aardvark(port)
+
+    return dev
+
 class Aardvark:
-    """Represent an Aardvark device."""
+    """Represents an Aardvark device."""
     BUFFER_SIZE = 65535
 
-    ERR_UNABLE_TO_LOAD_LIBRARY = -1
-    ERR_UNABLE_TO_LOAD_DRIVER = -2
-    ERR_UNABLE_TO_LOAD_FUNCTION = -3
-    ERR_INCOMPATIBLE_LIBRARY = -4
-    ERR_INCOMPATIBLE_DEVICE = -5
-    ERR_COMMUNICATION_ERROR = -6
-    ERR_UNABLE_TO_OPEN = -7
-    ERR_UNABLE_TO_CLOSE = -8
-    ERR_INVALID_HANDLE = -9
-    ERR_CONFIG_ERROR = -10
-    ERR_I2C_NOT_AVAILABLE = -100
-    ERR_I2C_NOT_ENABLED = -101
-    ERR_I2C_READ_ERROR = -102
-    ERR_I2C_WRITE_ERROR = -103
-    ERR_I2C_SLAVE_BAD_CONFIG = -104
-    ERR_I2C_SLAVE_READ_ERROR = -105
-    ERR_I2C_SLAVE_TIMEOUT = -106
-    ERR_I2C_DROPPED_EXCESS_BYTES = -107
-    ERR_I2C_BUS_ALREADY_FREE = -108
-    ERR_SPI_NOT_AVAILABLE = -200
-    ERR_SPI_NOT_ENABLED = -201
-    ERR_SPI_WRITE_ERROR = -202
-    ERR_SPI_SLAVE_READ_ERROR = -203
-    ERR_SPI_SLAVE_TIMEOUT = -204
-    ERR_SPI_DROPPED_EXCESS_BYTES = -205
-
-    @staticmethod
-    def _error_to_string(err):
-        for attr in dir(Aardvark):
-            if attr.startswith('ERR_'):
-                if getattr(Aardvark, attr) == err:
-                    return attr
-
-    MAX_DEVICES = 16
-    @staticmethod
-    def find_devices():
-        """Get a list of Aardvark devices.
-
-        Returns the port number which can be used to open an Aardvark device.
-        """
-        # api expects array of u16
-        devices = array.array('H', (0,) * Aardvark.MAX_DEVICES)
-        ret = api.py_aa_find_devices(Aardvark.MAX_DEVICES, devices)
-        if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
-        del devices[ret:]
-        return devices
-
-    def __init__(self):
-        self._handle = None
-
-    def open(self, port=0):
-        """Open an aardvark device.
-
-        The port can be retrieved by `find_devices`. Usually, the first device
-        is 0, the second 1, etc.
-
-        If you are using only one device, you can therefore omit the parameter
-        in which case 0 is used.
-        """
-
-        handle = api.py_aa_open(port)
-        if handle <= 0:
+    def __init__(self, port=0):
+        self.handle = api.py_aa_open(port)
+        if self.handle <= 0:
             raise IOError('aardvark device on port %d not found' % port)
-
-        self._handle = handle
 
     def close(self):
         """Close the device."""
 
-        api.py_aa_close(self._handle)
-        self._handle = None
+        api.py_aa_close(self.handle)
+        self.handle = None
 
     def unique_id(self):
         """Return the unique identifier of the device.
@@ -111,7 +100,7 @@ class Aardvark:
         That is, the serial number of the device as listed in the USB
         descriptor.
         """
-        return api.py_aa_unique_id(self._handle)
+        return api.py_aa_unique_id(self.handle)
 
     def unique_id_str(self):
         """Return the unique identifier of the device as a human readable
@@ -123,63 +112,47 @@ class Aardvark:
         unique_id = self.unique_id()
         id1 = unique_id / 1000000
         id2 = unique_id % 1000000
-        return '%d-%d' % (id1, id2)
+        return '%04d-%06d' % (id1, id2)
 
-    CONFIG_GPIO_ONLY = 0x00
-    CONFIG_SPI_GPIO = 0x01
-    CONFIG_GPIO_I2C = 0x02
-    CONFIG_SPI_I2C = 0x03
-    CONFIG_QUERY = 0x80
     def configure(self, config):
         """Configure the device.
 
         This enables I2C, SPI, GPIO, etc.
         """
 
-        ret = api.py_aa_configure(self._handle, config)
+        ret = api.py_aa_configure(self.handle, config)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
 
     def i2c_bitrate(self, khz):
         """Set the I2C bitrate."""
 
-        ret = api.py_aa_i2c_bitrate(self._handle, khz)
+        ret = api.py_aa_i2c_bitrate(self.handle, khz)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
 
-    I2C_PULLUP_NONE = 0x00
-    I2C_PULLUP_BOTH = 0x03
-    I2C_PULLUP_QUERY = 0x80
     def i2c_enable_pullups(self, enabled):
         """Enable I2C pullups."""
 
         if enabled:
-            ret = api.py_aa_i2c_pullup(self._handle, self.I2C_PULLUP_BOTH)
+            pullup = I2C_PULLUP_BOTH
         else:
-            ret = api.py_aa_i2c_pullup(self._handle, self.I2C_PULLUP_NONE)
+            pullup = I2C_PULLUP_NONE
+        ret = api.py_aa_i2c_pullup(self.handle, pullup)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
 
-    TARGET_POWER_NONE = 0x00
-    TARGET_POWER_BOTH = 0x03
-    TARGET_POWER_QUERY = 0x80
     def enable_target_power(self, enabled):
         """Enable target power."""
 
         if enabled:
-            power = self.TARGET_POWER_BOTH
+            power = TARGET_POWER_BOTH
         else:
-            power = self.TARGET_POWER_NONE
-        ret = api.py_aa_target_power(self._handle, power)
+            power = TARGET_POWER_NONE
+        ret = api.py_aa_target_power(self.handle, power)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
 
-    I2C_NO_FLAGS = 0x00
-    I2C_10_BIT_ADDR = 0x01
-    I2C_COMBINED_FMT = 0x02
-    I2C_NO_STOP = 0x04
-    I2C_SIZED_READ = 0x10
-    I2C_SIZED_READ_EXTRA1 = 0x20
     def i2c_master_write(self, i2c_address, data, flags=I2C_NO_FLAGS):
         """Make an I2C write access.
 
@@ -191,10 +164,10 @@ class Aardvark:
         """
 
         data = array.array('B', data)
-        ret = api.py_aa_i2c_write(self._handle, i2c_address,
+        ret = api.py_aa_i2c_write(self.handle, i2c_address,
                 flags, len(data), data)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
 
     def i2c_master_read(self, addr, length, flags=I2C_NO_FLAGS):
         """Make an I2C read access.
@@ -208,10 +181,10 @@ class Aardvark:
         """
 
         data = array.array('B', (0,) * length)
-        ret = api.py_aa_i2c_read(self._handle, addr, flags, length,
+        ret = api.py_aa_i2c_read(self.handle, addr, flags, length,
                 data)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
         del data[ret:]
         return data.tostring()
 
@@ -240,24 +213,19 @@ class Aardvark:
         You can wait for the data with `poll` and get it with
         `i2c_slave_read`.
         """
-        ret = api.py_aa_i2c_slave_enable(self._handle, slave_address,
+        ret = api.py_aa_i2c_slave_enable(self.handle, slave_address,
                 self.BUFFER_SIZE, self.BUFFER_SIZE)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
 
-    POLL_NO_DATA = 0x00
-    POLL_I2C_READ = 0x01
-    POLL_I2C_WRITE = 0x02
-    POLL_SPI = 0x04
-    POLL_I2C_MONITOR = 0x08
     def poll(self, timeout_ms):
         """Wait for an event to occur.
 
         Returns a bitfield of event flags.
         """
-        ret = api.py_aa_async_poll(self._handle, timeout_ms)
+        ret = api.py_aa_async_poll(self.handle, timeout_ms)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
         return ret
 
     def i2c_slave_read(self):
@@ -266,41 +234,33 @@ class Aardvark:
         The bytes are returns as an string object.
         """
         data = array.array('B', (0,) * self.BUFFER_SIZE)
-        (ret, slave_addr) = api.py_aa_i2c_slave_read(self._handle, self.BUFFER_SIZE,
+        (ret, slave_addr) = api.py_aa_i2c_slave_read(self.handle, self.BUFFER_SIZE,
                 data)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
         del data[ret:]
         return (slave_addr, data.tostring())
 
     def spi_bitrate(self, khz):
         """Set the SPI bitrate."""
-        ret = api.py_aa_spi_bitrate(self._handle, khz)
+        ret = api.py_aa_spi_bitrate(self.handle, khz)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
 
-    SPI_POL_RISING_FALLING = 0
-    SPI_POL_FALLING_RISING = 1
-    SPI_PHASE_SAMPLE_SETUP = 0
-    SPI_PHASE_SETUP_SAMPLE = 1
-    SPI_BITORDER_MSB = 0
-    SPI_BITORDER_LSB = 1
     def spi_configure(self, polarity, phase, bitorder):
         """Configure the SPI interface."""
-        ret = api.py_aa_spi_configure(self._handle, polarity, phase, bitorder)
+        ret = api.py_aa_spi_configure(self.handle, polarity, phase, bitorder)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
 
-    SPI_MODE_0 = 0
-    SPI_MODE_3 = 3
     def spi_configure_mode(self, spi_mode):
         """Configure the SPI interface by the well known SPI modes."""
-        if spi_mode == self.SPI_MODE_0:
-            self.spi_configure(self.SPI_POL_RISING_FALLING,
-                    self.SPI_PHASE_SAMPLE_SETUP, self.SPI_BITORDER_MSB)
-        elif spi_mode == self.SPI_MODE_3:
-            self.spi_configure(self.SPI_POL_FALLING_RISING,
-                    self.SPI_PHASE_SETUP_SAMPLE, self.SPI_BITORDER_MSB)
+        if spi_mode == SPI_MODE_0:
+            self.spi_configure(SPI_POL_RISING_FALLING,
+                    SPI_PHASE_SAMPLE_SETUP, SPI_BITORDER_MSB)
+        elif spi_mode == SPI_MODE_3:
+            self.spi_configure(SPI_POL_FALLING_RISING,
+                    SPI_PHASE_SETUP_SAMPLE, SPI_BITORDER_MSB)
         else:
             raise RuntimeError('SPI Mode not supported')
 
@@ -308,19 +268,17 @@ class Aardvark:
         "Write a stream of bytes to a SPI device."""
         data_out = array.array('B', data)
         data_in = array.array('B', (0,) * len(data_out))
-        ret = api.py_aa_spi_write(self._handle, len(data_out), data_out,
+        ret = api.py_aa_spi_write(self.handle, len(data_out), data_out,
                 len(data_in), data_in)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
         return data_in.tostring()
 
-    SPI_SS_ACTIVE_LOW = 0
-    SPI_SS_ACTIVE_HIGH = 1
     def spi_ss_polarity(self, polarity):
         """Change the ouput polarity on the SS line.
 
         Please note, that this only affects the master functions.
         """
-        ret = api.py_aa_spi_master_ss_polarity(self._handle, polarity)
+        ret = api.py_aa_spi_master_ss_polarity(self.handle, polarity)
         if ret < 0:
-            raise IOError(Aardvark._error_to_string(ret))
+            raise IOError(error_string(ret))
