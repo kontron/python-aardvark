@@ -9,6 +9,6 @@ X-Python-Version: >= 2.6
 Package: python-aardvark
 Architecture: i386
 Depends: ${python:Depends}, ${misc:Depends}, ${shlibs:Depends}, libusb-0.1-4, python-pkg-resources
-Description: Totalphase Aardvark interface for Python
+Description: Total Phase Aardvark interface for Python
  pyAardvark is a thin wrapper around the binary-only python module supplied by
  the vendor. It allows easier pythonic programming.

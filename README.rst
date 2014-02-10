@@ -1,7 +1,7 @@
-Python binding for Totalphase Aardvark |BuildStatus|
+Python binding for Total Phase Aardvark |BuildStatus|
 ====================================================
 
-The `Totalphase`_ Aardvark is an USB |I2C|/SPI host adapter.
+The `Total Phase`_ Aardvark is an USB |I2C|/SPI host adapter.
 
 
 Rationale
@@ -18,7 +18,7 @@ Requirements
 ------------
 
 You need an either a x86 or an amd64 machine. This is because the binding
-uses a binary-only module supplied by the manufacturer, Totalphase.
+uses a binary-only module supplied by the manufacturer, Total Phase.
 Additonally, only Linux is supported at the moment.
 
 
@@ -39,7 +39,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with this library; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
-.. _Totalphase: http://www.totalphase.com
+.. _Total Phase: http://www.totalphase.com
 .. |I2C| replace:: I\ :sub:`2`\ C
 .. |BuildStatus| image:: https://travis-ci.org/kontron/python-aardvark.png?branch=master
                  :target: https://travis-ci.org/kontron/python-aardvark

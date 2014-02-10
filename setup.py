@@ -23,7 +23,7 @@ def main():
 
     setup(name = 'pyaardvark',
             version = version,
-            description = 'Totalphase Aardvark library',
+            description = 'Total Phase Aardvark library',
             author_email = 'michael.walle@kontron.com',
             packages = find_packages(),
             license = 'LGPLv2+',
