@@ -201,7 +201,7 @@ class Aardvark:
         `i2c_master_write` and `i2c_master_read`.
         """
 
-        self.i2c_master_write(i2c_address, data, self.I2C_NO_STOP)
+        self.i2c_master_write(i2c_address, data, I2C_NO_STOP)
         return self.i2c_master_read(i2c_address, length)
 
     def i2c_slave_enable(self, slave_address):
