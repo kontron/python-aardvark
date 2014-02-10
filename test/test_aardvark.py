@@ -7,6 +7,11 @@ import pyaardvark
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 class AardvarkTest(unittest.TestCase):
+
+    def open(self, api):
+        api.py_aa_open.return_value = 1
+        return pyaardvark.open()
+
     def test_error_string(self, api):
         self.assertEqual(pyaardvark.aardvark.error_string(-1),
                 'ERR_UNABLE_TO_LOAD_LIBRARY')
@@ -78,49 +83,49 @@ class AardvarkTest(unittest.TestCase):
         self.assertRaises(IOError, pyaardvark.open)
 
     def test_close(self, api):
-        a = pyaardvark.open()
+        a = self.open(api)
         handle = a.handle
         a.close()
         api.py_aa_close.assert_called_once_with(handle)
 
     def test_unique_id(self, api):
-        a = pyaardvark.open()
+        a = self.open(api)
         api.py_aa_unique_id.return_value = 3627028473
         unique_id = a.unique_id()
         api.py_aa_unique_id.assert_called_once_with(a.handle)
         self.assertEqual(unique_id, api.py_aa_unique_id.return_value)
 
     def test_unique_id_str(self, api):
-        a = pyaardvark.open()
+        a = self.open(api)
         api.py_aa_unique_id.return_value = 627008473
         unique_id_str = a.unique_id_str()
         api.py_aa_unique_id.assert_called_once_with(a.handle)
         self.assertEqual(unique_id_str, '0627-008473')
 
     def test_configure(self, api):
-        a = pyaardvark.open()
+        a = self.open(api)
         api.py_aa_configure.return_value = 0
         a.configure(4711)
         api.py_aa_configure.assert_called_once_with(a.handle, 4711)
 
     def test_configure_error(self, api):
-        a = pyaardvark.open(4711)
+        a = self.open(api)
         api.py_aa_configure.return_value = -1
         self.assertRaises(IOError, a.configure, (0,))
 
     def test_i2c_bitrate(self, api):
-        a = pyaardvark.open(4711)
+        a = self.open(api)
         api.py_aa_i2c_bitrate.return_value = 0
         a.i2c_bitrate(4711)
         api.py_aa_i2c_bitrate.assert_called_once_with(a.handle, 4711)
 
     def test_i2c_bitrate_error(self, api):
-        a = pyaardvark.open(4711)
+        a = self.open(api)
         api.py_aa_i2c_bitrate.return_value = -1
         self.assertRaises(IOError, a.i2c_bitrate, (0,))
 
     def test_i2c_enable_pullups(self, api):
-        a = pyaardvark.open(4711)
+        a = self.open(api)
         api.py_aa_i2c_pullup.return_value = 0
         a.i2c_enable_pullups(False)
         a.i2c_enable_pullups(True)
@@ -130,12 +135,12 @@ class AardvarkTest(unittest.TestCase):
         ])
 
     def test_i2c_enable_pullups_error(self, api):
-        a = pyaardvark.open(4711)
+        a = self.open(api)
         api.py_aa_i2c_pullup.return_value = -1
         self.assertRaises(IOError, a.i2c_enable_pullups, (0,))
 
     def test_enable_target_power(self, api):
-        a = pyaardvark.open(4711)
+        a = self.open(api)
         api.py_aa_target_power.return_value = 0
         a.enable_target_power(False)
         a.enable_target_power(True)
@@ -145,7 +150,7 @@ class AardvarkTest(unittest.TestCase):
         ])
 
     def test_enable_target_power_error(self, api):
-        a = pyaardvark.open(4711)
+        a = self.open(api)
         api.py_aa_target_power.return_value = -1
         self.assertRaises(IOError, a.enable_target_power, (0,))
 

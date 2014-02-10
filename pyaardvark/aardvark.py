@@ -31,7 +31,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 def error_string(error_number):
-    for k, v in globals().iteritems():
+    for k, v in globals().items():
         if k.startswith('ERR_') and v == error_number:
             return k
     else:
