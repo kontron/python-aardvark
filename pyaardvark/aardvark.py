@@ -38,9 +38,9 @@ def error_string(error_number):
         return 'ERR_UNKNOWN_ERROR'
 
 def find_devices(max_devices=16):
-    """Get a list of Aardvark devices.
+    """Return a list of port numbers which can be used with :func:`open`.
 
-    Returns the port number which can be used to open an Aardvark device.
+    :class:`IOError` is raised if the underlying API returns an error.
     """
 
     # api expects array of u16
@@ -52,9 +52,10 @@ def find_devices(max_devices=16):
     return devices
 
 def open(port=None, serial_number=None):
-    """Open an aardvark device.
+    """Open an aardvark device and return an :class:`Aardvark` object. If the
+    device cannot be opened an :class:`IOError` is raised.
 
-    The `port` can be retrieved by :func:find_devices. Usually, the first
+    The `port` can be retrieved by :func:`find_devices`. Usually, the first
     device is 0, the second 1, etc.
 
     If you are using only one device, you can therefore omit the parameter
@@ -62,7 +63,7 @@ def open(port=None, serial_number=None):
 
     Another method to open a device is to use the serial number. You can either
     find the number on the device itself or in the in the corresponding USB
-    property. The serial number is a string which looks like ``NNNN-MMMMMMM`.
+    property. The serial number is a string which looks like `NNNN-MMMMMMM`.
     """
     if port is None and serial_number is None:
         dev = Aardvark()
@@ -102,19 +103,15 @@ class Aardvark:
         self.handle = None
 
     def unique_id(self):
-        """Return the unique identifier of the device.
-
-        That is, the serial number of the device as listed in the USB
-        descriptor.
+        """Return the unique identifier of the device. The identifier is the
+        serial number you can find on the adapter without the dash. Eg. the
+        serial number 0012-345678 would be 12345678.
         """
         return api.py_aa_unique_id(self.handle)
 
     def unique_id_str(self):
-        """Return the unique identifier of the device as a human readable
-        string.
-
-        The format is NNNN-NNNNNN, you should find the same format on the host
-        adapter.
+        """Return the unique identifier. But unlike :func:`unique_id`, the ID
+        is returned as a string which has the format NNNN-MMMMMMM.
         """
         unique_id = self.unique_id()
         id1 = unique_id / 1000000
@@ -122,9 +119,21 @@ class Aardvark:
         return '%04d-%06d' % (id1, id2)
 
     def configure(self, config):
-        """Configure the device.
+        """Configure the mode of the aardvark device.
 
-        This enables I2C, SPI, GPIO, etc.
+        The hardware supports the following mode:
+
+        ====== ======
+          #1     #2
+        ====== ======
+         GPIO   GPIO
+         SPI    GPIO
+         GPIO   I2C
+         SPI    I2C
+        ====== ======
+
+        That is, if the hardware interface (either SPI or I2C) is disabled,
+        this port is automatically in GPIO mode.
         """
 
         ret = api.py_aa_configure(self.handle, config)
