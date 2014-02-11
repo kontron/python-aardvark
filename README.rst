@@ -56,6 +56,6 @@ along with this library; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 .. _Total Phase: http://www.totalphase.com
-.. |I2C| replace:: I\ :sub:`2`\ C
+.. |I2C| replace:: I\ :sup:`2`\ C
 .. |BuildStatus| image:: https://travis-ci.org/kontron/python-aardvark.png?branch=master
                  :target: https://travis-ci.org/kontron/python-aardvark
