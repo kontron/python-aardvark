@@ -88,6 +88,14 @@ class AardvarkTest(unittest.TestCase):
         a.close()
         api.py_aa_close.assert_called_once_with(handle)
 
+    def test_context_manager(self, api):
+        api.py_aa_open.return_value = 1
+        with pyaardvark.open() as a:
+            self.assertEqual(a.handle, api.py_aa_open.return_value)
+            api.py_aa_open.assert_called_once_with(0)
+            pass
+        api.py_aa_close.assert_called_once_with(api.py_aa_open.return_value)
+
     def test_unique_id(self, api):
         a = self.open(api)
         api.py_aa_unique_id.return_value = 3627028473

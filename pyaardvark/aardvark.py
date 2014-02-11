@@ -88,6 +88,13 @@ class Aardvark:
         if self.handle <= 0:
             raise IOError('aardvark device on port %d not found' % port)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, tb):
+        self.close()
+        return False
+
     def close(self):
         """Close the device."""
 
