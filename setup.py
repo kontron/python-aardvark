@@ -24,8 +24,10 @@ def main():
     setup(name = 'pyaardvark',
             version = version,
             description = 'Total Phase Aardvark library',
+            author = 'Michael Walle',
             author_email = 'michael.walle@kontron.com',
             packages = find_packages(),
+            url = 'http://github.com/kontron/python-aardvark',
             license = 'LGPLv2+',
             classifiers = [
                 'Development Status :: 4 - Beta',
