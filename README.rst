@@ -1,5 +1,5 @@
 Python binding for Total Phase Aardvark |BuildStatus|
-====================================================
+=====================================================
 
 The `Total Phase`_ Aardvark is an USB |I2C|/SPI host adapter.
 
@@ -12,6 +12,22 @@ is correct, but the python binding you can find in the
 ``aardvark-linux-api`` package is very C oriented. Eg. you need to pass
 arrays as method parameters, which are then modified by the binding.
 Instead, this binding tries to be more pythonic.
+
+
+Features
+--------
+ * simple interface
+ * CLI tool for easy testing
+ * |I2C| and SPI support
+ * support for control signals like target power and internal |I2C| pullups
+ * rudimental |I2C| slave support
+
+
+(Still) Missing Features
+------------------------
+ * more documentation (please bear with me)
+ * GPIO support
+ * I2C monitor support
 
 
 Requirements
