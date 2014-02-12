@@ -9,7 +9,7 @@ import pyaardvark
 class AardvarkTest(unittest.TestCase):
 
     def open(self, api):
-        api.py_aa_open.return_value = 1
+        api.py_aa_open_ext.return_value = (1, (0,) * 6)
         return pyaardvark.open()
 
     def test_error_string(self, api):
@@ -43,16 +43,16 @@ class AardvarkTest(unittest.TestCase):
         self.assertEqual(devs[1], 4711)
 
     def test_open_default(self, api):
-        api.py_aa_open.return_value = 42
+        api.py_aa_open_ext.return_value = (42, (0,) * 6)
         a = pyaardvark.open()
-        api.py_aa_open.assert_called_once_with(0)
-        self.assertEqual(a.handle, api.py_aa_open.return_value)
+        api.py_aa_open_ext.assert_called_once_with(0)
+        self.assertEqual(a.handle, api.py_aa_open_ext.return_value[0])
 
     def test_open_port(self, api):
-        api.py_aa_open.return_value = 42
+        api.py_aa_open_ext.return_value = (42, (0,) * 6)
         a = pyaardvark.open(4711)
-        api.py_aa_open.assert_called_once_with(4711)
-        self.assertEqual(a.handle, api.py_aa_open.return_value)
+        api.py_aa_open_ext.assert_called_once_with(4711)
+        self.assertEqual(a.handle, api.py_aa_open_ext.return_value[0])
 
     def test_open_serial_number(self, api):
         devices = {
@@ -68,13 +68,13 @@ class AardvarkTest(unittest.TestCase):
             return len(devices)
 
         def open(handle):
-            return handle
+            return (handle, (0,) * 6)
 
         def unique_id(handle):
             return devices[handle]
 
         api.py_aa_find_devices.side_effect = find_devices
-        api.py_aa_open.side_effect = open
+        api.py_aa_open_ext.side_effect = open
         api.py_aa_unique_id.side_effect = unique_id
 
         a = pyaardvark.open(serial_number='1234-567890')
@@ -85,8 +85,23 @@ class AardvarkTest(unittest.TestCase):
 
         self.assertRaises(IOError, pyaardvark.open, serial_number='7777-888888')
 
+    def test_open_versions(self, api):
+        api.py_aa_open_ext.return_value = (1, (0x101, 0x202, 0x303, 0, 0, 0))
+        a = pyaardvark.open()
+        self.assertEqual(a.api_version, '1.01')
+        self.assertEqual(a.firmware_version, '2.02')
+        self.assertEqual(a.hardware_revision, '3.03')
+
     def test_open_error(self, api):
-        api.py_aa_open.return_value = -1
+        api.py_aa_open_ext.return_value = (-1, (0,) * 6)
+        self.assertRaises(IOError, pyaardvark.open)
+
+    def test_open_version_check_firmware(self, api):
+        api.py_aa_open_ext.return_value = (1, (0, 100, 0, 0, 200, 0))
+        self.assertRaises(IOError, pyaardvark.open)
+
+    def test_open_version_check_api(self, api):
+        api.py_aa_open_ext.return_value = (1, (100, 0, 0, 200, 0, 0))
         self.assertRaises(IOError, pyaardvark.open)
 
     def test_close(self, api):
@@ -96,12 +111,13 @@ class AardvarkTest(unittest.TestCase):
         api.py_aa_close.assert_called_once_with(handle)
 
     def test_context_manager(self, api):
-        api.py_aa_open.return_value = 1
+        api.py_aa_open_ext.return_value = (1, (0,) * 6)
         with pyaardvark.open() as a:
-            self.assertEqual(a.handle, api.py_aa_open.return_value)
-            api.py_aa_open.assert_called_once_with(0)
+            self.assertEqual(a.handle, api.py_aa_open_ext.return_value[0])
+            api.py_aa_open_ext.assert_called_once_with(0)
             pass
-        api.py_aa_close.assert_called_once_with(api.py_aa_open.return_value)
+        api.py_aa_close.assert_called_once_with(
+                api.py_aa_open_ext.return_value[0])
 
     def test_unique_id(self, api):
         a = self.open(api)

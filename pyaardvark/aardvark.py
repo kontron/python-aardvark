@@ -107,9 +107,56 @@ class Aardvark:
     BUFFER_SIZE = 65535
 
     def __init__(self, port=0):
-        self.handle = api.py_aa_open(port)
-        if self.handle <= 0:
-            raise IOError(error_string(self.handle))
+        ret, ver = api.py_aa_open_ext(port)
+        if ret < 0:
+            raise IOError(ret, error_string(ret))
+
+        #: A handle which is used as the first paramter for all calls to the
+        #: underlying API.
+        self.handle = ret
+
+        # assign some useful names
+        version = dict(
+            software = ver[0],
+            firmware = ver[1],
+            hardware = ver[2],
+            sw_req_by_fw = ver[3],
+            fw_req_by_sw = ver[4],
+            api_req_by_sw = ver[5],
+        )
+
+        to_version_str = lambda v: '%d.%02d' % (v >> 8, v & 0xff)
+
+        #: Hardware revision of the host adapter as a string. The format is
+        #: ``M.NN`` where `M` is the major number and `NN` the zero padded
+        #: minor number.
+        self.hardware_revision = to_version_str(version['hardware'])
+
+        #: Firmware version of the host adapter as a string. See
+        #: :attr:`hardware_revision` for more information on the format.
+        self.firmware_version = to_version_str(version['firmware'])
+
+        #: Version of underlying C module (aardvark.so, aardvark.dll) as a
+        #: string. See :attr:`hardware_revision` for more information on the
+        #: format.
+        self.api_version = to_version_str(version['software'])
+
+        # version checks
+        if version['firmware'] < version['fw_req_by_sw']:
+            log.debug('The API requires a firmware version >= %s, but the '
+                    'device has version %s',
+                    to_version_str(version['fw_req_by_sw']),
+                    to_version_str(version['firmware']))
+            ret = ERR_INCOMPATIBLE_DEVICE
+        elif version['software'] < version['sw_req_by_fw']:
+            log.debug('The firmware requires an API version >= %s, but the '
+                    'API has version %s',
+                    to_version_str(version['sw_req_by_fw']),
+                    to_version_str(version['software']))
+            ret = ERR_INCOMPATIBLE_LIBRARY
+
+        if ret < 0:
+            raise IOError(ret, error_string(ret))
 
     def __enter__(self):
         return self
