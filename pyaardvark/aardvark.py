@@ -37,18 +37,37 @@ def error_string(error_number):
     else:
         return 'ERR_UNKNOWN_ERROR'
 
-def find_devices(max_devices=16):
+def find_devices(filter_in_use=True):
     """Return a list of port numbers which can be used with :func:`open`.
 
-    :class:`IOError` is raised if the underlying API returns an error.
+    If *filter_in_use* parameter is `True` devices which are already opened
+    will be filtered from the list. If set to `False`, the port numbers are
+    still included in the returned list and the user may get an
+    :class:`IOError` if the port number is used with :func:`open`.
+
+    .. note::
+
+       There is no guarantee, that the returned port numbers are still valid
+       when you open the device with it. Eg. it may be disconnected from the
+       machine after you call :func:`find_devices` but before you call
+       :func:`open`.
     """
 
-    # api expects array of u16
-    devices = array.array('H', (0,) * max_devices)
-    ret = api.py_aa_find_devices(len(devices), devices)
-    if ret < 0:
-        raise IOError(error_string(ret))
-    del devices[ret:]
+    # first fetch the number of attached devices, so we can create a buffer
+    # with the exact amount of entries. api expects array of u16
+    num_devices = api.py_aa_find_devices(0, array.array('H'))
+    assert num_devices > 0
+
+    devices = array.array('H', (0,) * num_devices)
+    num_devices = api.py_aa_find_devices(len(devices), devices)
+    assert num_devices > 0
+
+    del devices[num_devices:]
+
+    if filter_in_use:
+        devices = [ d for d in devices if not d & PORT_NOT_FREE ]
+    else:
+        devices = [ d & ~PORT_NOT_FREE for d in devices]
     return devices
 
 def open(port=None, serial_number=None):
@@ -64,6 +83,9 @@ def open(port=None, serial_number=None):
     Another method to open a device is to use the serial number. You can either
     find the number on the device itself or in the in the corresponding USB
     property. The serial number is a string which looks like `NNNN-MMMMMMM`.
+
+    Raises an :class:`IOError` if the port number (or serial number) does not
+    exist, is already connected or an incompatible device is found.
     """
     if port is None and serial_number is None:
         dev = Aardvark()
@@ -74,7 +96,7 @@ def open(port=None, serial_number=None):
                 break
             dev.close()
         else:
-            raise IOError("Device not found")
+            raise IOError(error_string(ERR_UNABLE_TO_OPEN))
     else:
         dev = Aardvark(port)
 
@@ -87,7 +109,7 @@ class Aardvark:
     def __init__(self, port=0):
         self.handle = api.py_aa_open(port)
         if self.handle <= 0:
-            raise IOError('aardvark device on port %d not found' % port)
+            raise IOError(error_string(self.handle))
 
     def __enter__(self):
         return self

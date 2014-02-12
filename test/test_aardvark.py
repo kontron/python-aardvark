@@ -22,20 +22,25 @@ class AardvarkTest(unittest.TestCase):
 
     def test_find_devices_valid_devices(self, api):
         def f(num, devices):
-            devices[0] = 42
-            devices[1] = 4711
+            if num >= 2:
+                devices[0] = 42 | pyaardvark.PORT_NOT_FREE
+                devices[1] = 4711
             return 2
 
         api.py_aa_find_devices.side_effect = f
+
         devs = pyaardvark.find_devices()
+        api.py_aa_find_devices.assert_has_calls([
+            call(0, array.array('H')),
+            call(2, ANY),
+        ])
+        self.assertEqual(len(devs), 1)
+        self.assertEqual(devs[0], 4711)
+
+        devs = pyaardvark.find_devices(filter_in_use=False)
+        self.assertEqual(len(devs), 2)
         self.assertEqual(devs[0], 42)
         self.assertEqual(devs[1], 4711)
-        self.assertIsInstance(
-                api.py_aa_find_devices.call_args[0][1], array.array)
-
-    def test_find_devices_error(self, api):
-        api.py_aa_find_devices.return_value = -1
-        self.assertRaises(IOError, pyaardvark.find_devices)
 
     def test_open_default(self, api):
         api.py_aa_open.return_value = 42
@@ -57,6 +62,8 @@ class AardvarkTest(unittest.TestCase):
         }
         def find_devices(_num, devs):
             for i, dev in enumerate(devices.keys()):
+                if _num <= i:
+                    break
                 devs[i] = dev
             return len(devices)
 
