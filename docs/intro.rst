@@ -10,8 +10,8 @@ The :mod:`pyaardvark` module tries to provide a very simple API to use the
 Simple Example
 --------------
 
-In this example we access an (byte-addressable) |I2C|-EEPROM on address
-0x50 and read the first five bytes of its content::
+In this example we access an |I2C|-EEPROM on address `0x50` and read the
+first five bytes of its content::
 
   import pyaardvark
 
@@ -22,6 +22,13 @@ In this example we access an (byte-addressable) |I2C|-EEPROM on address
 
 Easy, huh?
 
+For those, who are not familiar with |I2C|-EEPROM accesses: You first write
+the offset to read from to the device (`0x00` in the example above) and
+then you read the desired amount of bytes from the device. The offset
+counter will automatically be incremened. Therefore, in the example above
+you read the bytes at the offsets 0, 1, 2, 3 and 4. Please note, that there
+are byte- and word-addressable EEPROMs. In this example we assumed a
+byte-addressable one, because our offset is only one byte.
 
 Tutorial
 --------
@@ -32,7 +39,7 @@ Opening an Aardvark device
 You have three choices to open your Aardvark device. The first is the one
 you saw in the simple example above::
 
-  >>> a = pyaardvark.open()
+  a = pyaardvark.open()
 
 If you have only one device connected to your machine, this is all you have
 to do. :func:`pyaardvark.open` automatically uses the first device it finds.
@@ -40,10 +47,34 @@ to do. :func:`pyaardvark.open` automatically uses the first device it finds.
 If you have multiple devices connected, you can either use the port
 parameter::
 
-  >>> a = pyaardvark.open(1)
+  a = pyaardvark.open(1)
 
 or the serial number, which you can find on the device itself or
 in your USB properties of your machine::
 
-  >>> a = pyaardvark.open(serial_number='1111-222222')
+  a = pyaardvark.open(serial_number='1111-222222')
+
+In all cases :func:`pyaardvark.open` returns an
+:class:`pyaardvark.Aardvark` object, which then can be used to access the
+host adapter.
+
+
+Using the context manager protocol to open an Aardvark device
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+All methods of the :class:`pyaardvark.Aardvark` object can raise an
+:exc:`IOError`. Instead of using *try .. except .. finally ..* you can use
+the `with` statement to open the device. Closing the device will then
+happen automatically after the block::
+
+  with pyaardvark.open() as a:
+      print a.api_version
+  # no need for a.close() here
+
+Closing the device
+~~~~~~~~~~~~~~~~~~
+
+Releasing the device can be done with :meth:`pyaardvark.Aardvark.close`::
+
+  a.close()
 
