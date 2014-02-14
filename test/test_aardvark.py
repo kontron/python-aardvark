@@ -152,42 +152,51 @@ class TestAardvark(object):
         self.a.configure(0)
 
     def test_i2c_bitrate(self, api):
-        api.py_aa_i2c_bitrate.return_value = 0
-        self.a.i2c_bitrate(4711)
-        api.py_aa_i2c_bitrate.assert_called_once_with(self.a.handle, 4711)
+        api.py_aa_i2c_bitrate.return_value = 100
+        self.a.i2c_bitrate = 4711
+        eq_(self.a.i2c_bitrate, 100)
+
+        api.py_aa_i2c_bitrate.assert_has_calls([
+                call(self.a.handle, 4711),
+                call(self.a.handle, 0),
+        ])
 
     @raises(IOError)
     def test_i2c_bitrate_error(self, api):
         api.py_aa_i2c_bitrate.return_value = -1
-        self.a.i2c_bitrate(0)
+        self.a.i2c_bitrate = 0
 
-    def test_i2c_enable_pullups(self, api):
+    def test_i2c_pullups(self, api):
         api.py_aa_i2c_pullup.return_value = 0
-        self.a.i2c_enable_pullups(False)
-        self.a.i2c_enable_pullups(True)
+        self.a.i2c_pullups = False
+        self.a.i2c_pullups = True
+        pullup = self.a.i2c_pullups
         api.py_aa_i2c_pullup.assert_has_calls([
             call(self.a.handle, pyaardvark.I2C_PULLUP_NONE),
             call(self.a.handle, pyaardvark.I2C_PULLUP_BOTH),
+            call(self.a.handle, pyaardvark.I2C_PULLUP_QUERY),
         ])
 
     @raises(IOError)
-    def test_i2c_enable_pullups_error(self, api):
+    def test_i2c_pullups_error(self, api):
         api.py_aa_i2c_pullup.return_value = -1
-        self.a.i2c_enable_pullups(0)
+        pullup = self.a.i2c_pullups
 
     def test_enable_target_power(self, api):
         api.py_aa_target_power.return_value = 0
-        self.a.enable_target_power(False)
-        self.a.enable_target_power(True)
+        self.a.target_power = False
+        self.a.target_power = True
+        power = self.a.target_power
         api.py_aa_target_power.assert_has_calls([
             call(self.a.handle, pyaardvark.TARGET_POWER_NONE),
             call(self.a.handle, pyaardvark.TARGET_POWER_BOTH),
+            call(self.a.handle, pyaardvark.TARGET_POWER_QUERY),
         ])
 
     @raises(IOError)
     def test_enable_target_power_error(self, api):
         api.py_aa_target_power.return_value = -1
-        self.a.enable_target_power(0)
+        self.a.target_power = 0
 
     def test_i2c_master_write(self, api):
         addr = 0x50
@@ -271,14 +280,19 @@ class TestAardvark(object):
         self.a.i2c_master_write_read(0, '', 0)
 
     def test_spi_bitrate(self, api):
-        api.py_aa_spi_bitrate.return_value = 0
-        self.a.spi_bitrate(4711)
-        api.py_aa_spi_bitrate.assert_called_once_with(self.a.handle, 4711)
+        api.py_aa_spi_bitrate.return_value = 1000
+        self.a.spi_bitrate = 4711
+        eq_(self.a.spi_bitrate, 1000)
+
+        api.py_aa_spi_bitrate.assert_has_calls([
+                call(self.a.handle, 4711),
+                call(self.a.handle, 0),
+        ])
 
     @raises(IOError)
     def test_spi_bitrate_error(self, api):
         api.py_aa_spi_bitrate.return_value = -1
-        self.a.spi_bitrate(0)
+        self.a.spi_bitrate = 0
 
     def test_spi_configure(self, api):
         api.py_aa_spi_configure.return_value = 0

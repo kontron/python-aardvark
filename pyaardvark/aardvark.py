@@ -102,7 +102,7 @@ def open(port=None, serial_number=None):
 
     return dev
 
-class Aardvark:
+class Aardvark(object):
     """Represents an Aardvark device."""
     BUFFER_SIZE = 65535
 
@@ -209,17 +209,41 @@ class Aardvark:
         if ret < 0:
             raise IOError(error_string(ret))
 
-    def i2c_bitrate(self, khz):
-        """Set the I2C bitrate."""
+    @property
+    def i2c_bitrate(self):
+        """I2C bitrate in kHz. Not every bitrate is supported by the host
+        adapter. Therefore, the actual bitrate may be less than the value which
+        is set.
 
-        ret = api.py_aa_i2c_bitrate(self.handle, khz)
+        The power-on default value is 100 kHz.
+        """
+
+        ret = api.py_aa_i2c_bitrate(self.handle, 0)
+        if ret < 0:
+            raise IOError(error_string(ret))
+        return ret
+
+    @i2c_bitrate.setter
+    def i2c_bitrate(self, value):
+        ret = api.py_aa_i2c_bitrate(self.handle, value)
         if ret < 0:
             raise IOError(error_string(ret))
 
-    def i2c_enable_pullups(self, enabled):
-        """Enable I2C pullups."""
+    @property
+    def i2c_pullups(self):
+        """Setting this to `True` will enable the I2C pullup resistors. If set
+        to `False` the pullup resistors will be disabled.
 
-        if enabled:
+        Raises an :exc:`IOError` if the hardware adapter does not support
+        pullup resistors.
+        """
+        ret = api.py_aa_i2c_pullup(self.handle, I2C_PULLUP_QUERY)
+        if ret < 0:
+            raise IOError(error_string(ret))
+
+    @i2c_pullups.setter
+    def i2c_pullups(self, value):
+        if value:
             pullup = I2C_PULLUP_BOTH
         else:
             pullup = I2C_PULLUP_NONE
@@ -227,10 +251,22 @@ class Aardvark:
         if ret < 0:
             raise IOError(error_string(ret))
 
-    def enable_target_power(self, enabled):
-        """Enable target power."""
+    @property
+    def target_power(self):
+        """Setting this to `True` will activate the power pins (4 and 6). If
+        set to `False` the power will be deactivated.
 
-        if enabled:
+        Raises an :exc:`IOError` if the hardware adapter does not support
+        the switchable power pins.
+        """
+        ret = api.py_aa_target_power(self.handle, TARGET_POWER_QUERY)
+        if ret < 0:
+            raise IOError(error_string(ret))
+
+
+    @target_power.setter
+    def target_power(self, value):
+        if value:
             power = TARGET_POWER_BOTH
         else:
             power = TARGET_POWER_NONE
@@ -326,9 +362,23 @@ class Aardvark:
         del data[ret:]
         return (slave_addr, data.tostring())
 
-    def spi_bitrate(self, khz):
-        """Set the SPI bitrate."""
-        ret = api.py_aa_spi_bitrate(self.handle, khz)
+    @property
+    def spi_bitrate(self):
+        """SPI bitrate in kHz. Not every bitrate is supported by the host
+        adapter. Therefore, the actual bitrate may be less than the value which
+        is set. The slowest bitrate supported is 125kHz. Any smaller value will
+        be rounded up to 125kHz.
+
+        The power-on default value is 1000 kHz.
+        """
+        ret = api.py_aa_spi_bitrate(self.handle, 0)
+        if ret < 0:
+            raise IOError(error_string(ret))
+        return ret
+
+    @spi_bitrate.setter
+    def spi_bitrate(self, value):
+        ret = api.py_aa_spi_bitrate(self.handle, value)
         if ret < 0:
             raise IOError(error_string(ret))
 
