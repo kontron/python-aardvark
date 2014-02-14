@@ -44,12 +44,12 @@ def _i2c_common(a, args):
 
 def i2c_wr(a, args):
     _i2c_common(a, args)
-    data = ''.join(['%c' % c for c in args.data])
+    data = ''.join('%c' % c for c in args.data)
     a.i2c_master_write(args.i2c_address, data)
 
 def i2c_wrrd(a, args):
     _i2c_common(a, args)
-    data = ''.join(['%c' % c for c in args.data])
+    data = ''.join('%c' % c for c in args.data)
     data = a.i2c_master_write_read(args.i2c_address, data, args.num_bytes)
     print ' '.join('%02x' % ord(c) for c in data)
 
