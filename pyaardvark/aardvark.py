@@ -21,10 +21,10 @@ import logging
 from .constants import *
 
 try:
-    import ext.linux32.aardvark as api
+    from .ext.linux32 import aardvark as api
 except ImportError:
     try:
-        import ext.linux64.aardvark as api
+        from .ext.linux64 import aardvark as api
     except:
         api = None
 

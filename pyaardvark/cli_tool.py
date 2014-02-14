@@ -16,6 +16,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
+from __future__ import print_function
 import sys
 import time
 import logging
@@ -51,12 +52,12 @@ def i2c_wrrd(a, args):
     _i2c_common(a, args)
     data = ''.join('%c' % c for c in args.data)
     data = a.i2c_master_write_read(args.i2c_address, data, args.num_bytes)
-    print ' '.join('%02x' % ord(c) for c in data)
+    print(' '.join('%02x' % ord(c) for c in data))
 
 def i2c_rd(a, args):
     _i2c_common(a, args)
     data = a.i2c_master_read(args.i2c_address, args.num_bytes)
-    print ' '.join('%02x' % ord(c) for c in data)
+    print(' '.join('%02x' % ord(c) for c in data))
 
 def spi(a, args):
     a.spi_configure_mode(pyaardvark.SPI_MODE_3)
@@ -64,16 +65,16 @@ def spi(a, args):
     try:
         data = ''.join('%c' % chr(int(c, 0)) for c in args.data)
     except ValueError:
-        print 'could not convert arguments'
+        print('could not convert arguments')
         sys.exit(1)
 
     data = a.spi_write(data)
-    print ' '.join('%02x' % ord(c) for c in data)
+    print(' '.join('%02x' % ord(c) for c in data))
 
 def scan(a, args):
     for port in pyaardvark.find_devices():
         dev = pyaardvark.open(port)
-        print 'Device #%d: %s' % (port, dev.unique_id_str())
+        print('Device #%d: %s' % (port, dev.unique_id_str()))
         dev.close()
 
 def main():
@@ -149,8 +150,8 @@ def main():
             a.configure(pyaardvark.CONFIG_SPI_I2C)
 
         args.func(a, args)
-    except Exception, e:
-        print e
+    except IOError as e:
+        print(e)
     finally:
         if a is not None:
             a.close()
