@@ -62,7 +62,7 @@ def spi(a, args):
     a.spi_configure_mode(pyaardvark.SPI_MODE_3)
     a.spi_bitrate = args.bitrate
     try:
-        data = ''.join('%c' % chr(int(c, 0)) for c in args)
+        data = ''.join('%c' % chr(int(c, 0)) for c in args.data)
     except ValueError:
         print 'could not convert arguments'
         sys.exit(1)
