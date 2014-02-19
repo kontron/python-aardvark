@@ -2,7 +2,6 @@
 
 import nose
 import array
-import unittest
 from mock import patch, call, ANY
 import pyaardvark
 from nose.tools import eq_, raises, assert_raises
