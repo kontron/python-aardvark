@@ -30,6 +30,12 @@ Features
  * I2C monitor support
 
 
+Documentation
+-------------
+
+You can find the most up to date documentation at:
+http://pyaardvark.rtfd.org
+
 Requirements
 ------------
 
