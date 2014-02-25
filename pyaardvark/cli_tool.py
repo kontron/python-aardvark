@@ -17,8 +17,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 from __future__ import print_function
-import sys
-import time
 import logging
 import argparse
 from functools import partial
@@ -64,12 +62,7 @@ def spi(a, args):
     a.enable_spi = True
     a.spi_configure_mode(pyaardvark.SPI_MODE_3)
     a.spi_bitrate = args.bitrate
-    try:
-        data = ''.join('%c' % chr(int(c, 0)) for c in args.data)
-    except ValueError:
-        print('could not convert arguments')
-        sys.exit(1)
-
+    data = ''.join('%c' % c for c in args.data)
     data = a.spi_write(data)
     print(' '.join('%02x' % ord(c) for c in data))
 
