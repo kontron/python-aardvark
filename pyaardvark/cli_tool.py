@@ -72,7 +72,7 @@ def scan(a, args):
         print('Device #%d: %s' % (port, dev.unique_id_str()))
         dev.close()
 
-def main():
+def main(args=None):
     parser = argparse.ArgumentParser(
             description='Total Phase I2C/SPI host adapter CLI.')
     parser.add_argument('-v', action='store_true', dest='verbose',
@@ -131,7 +131,7 @@ def main():
             help='byte to write')
     subparser.set_defaults(func=i2c_wrrd)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     logging.basicConfig()
     if args.verbose:
