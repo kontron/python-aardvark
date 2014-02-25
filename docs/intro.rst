@@ -58,7 +58,6 @@ In all cases :func:`pyaardvark.open` returns an
 :class:`pyaardvark.Aardvark` object, which then can be used to access the
 host adapter.
 
-
 Using the context manager protocol to open an Aardvark device
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -70,6 +69,28 @@ happen automatically after the block::
   with pyaardvark.open() as a:
       print a.api_version
   # no need for a.close() here
+
+Accessing your |I2C| and SPI devices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To issue |I2C| or SPI transactions you have to first configure the adapter
+in the corresponding output mode. Each interface, |I2C| or SPI, can either
+be GPIOs or the actual interface. So if, for example you want to use both
+|I2C| and SPI at the same time and none of them as GPIOs::
+
+  a.enable_i2c = True
+  a.enable_spi = True
+
+After you enabled the |I2C| interface you can issue transactions on the bus:
+
+  a.i2c_master_write(0x50, '\x00\x02\0x00\x00')
+
+This will write adress device `0x50` and sends the byte sequence `0x00`,
+`0x02`, `0x00`, `0x00` to it. To read from a device use
+:meth:`pyaardvark.Aardvark.i2c_master_read`. Eventually, both can be combined
+and issued in one transaction:
+:meth:`pyaardvark.Aardvark.i2c_master_write_read`.
+
 
 Closing the device
 ~~~~~~~~~~~~~~~~~~

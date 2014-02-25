@@ -187,27 +187,57 @@ class Aardvark(object):
         id2 = unique_id % 1000000
         return '%04d-%06d' % (id1, id2)
 
-    def configure(self, config):
-        """Configure the mode of the aardvark device.
-
-        The hardware supports the following mode:
-
-        ====== ======
-          #1     #2
-        ====== ======
-         GPIO   GPIO
-         SPI    GPIO
-         GPIO   I2C
-         SPI    I2C
-        ====== ======
-
-        That is, if the hardware interface (either SPI or I2C) is disabled,
-        this port is automatically in GPIO mode.
-        """
-
-        ret = api.py_aa_configure(self.handle, config)
+    def _interface_configuration(self, value):
+        ret = api.py_aa_configure(self.handle, value)
         if ret < 0:
             raise IOError(error_string(ret))
+        return ret
+
+    @property
+    def enable_i2c(self):
+        """Set this to `True` to enable the hardware I2C interface. If set to
+        `False` the hardware interface will be disabled and its pins (SDA and
+        SCL) can be used as GPIOs.
+        """
+        config = self._interface_configuration(CONFIG_QUERY)
+        return config == CONFIG_GPIO_I2C or config == CONFIG_SPI_I2C
+
+    @enable_i2c.setter
+    def enable_i2c(self, value):
+        new_config = config = self._interface_configuration(CONFIG_QUERY)
+        if value and config == CONFIG_GPIO_ONLY:
+            new_config = CONFIG_GPIO_I2C
+        elif value and config == CONFIG_SPI_GPIO:
+            new_config = CONFIG_SPI_I2C
+        elif not value and config == CONFIG_GPIO_I2C:
+            new_config = CONFIG_GPIO_ONLY
+        elif not value and config == CONFIG_SPI_I2C:
+            new_config = CONFIG_SPI_GPIO
+        if new_config != config:
+            self._interface_configuration(new_config)
+
+    @property
+    def enable_spi(self):
+        """Set this to `True` to enable the hardware SPI interface. If set to
+        `False` the hardware interface will be disabled and its pins (MISO,
+        MOSI, SCK and SS) can be used as GPIOs.
+        """
+        config = self._interface_configuration(CONFIG_QUERY)
+        return config == CONFIG_SPI_GPIO or config == CONFIG_SPI_I2C
+
+    @enable_spi.setter
+    def enable_spi(self, value):
+        new_config = config = self._interface_configuration(CONFIG_QUERY)
+        if value and config == CONFIG_GPIO_ONLY:
+            new_config = CONFIG_SPI_GPIO
+        elif value and config == CONFIG_GPIO_I2C:
+            new_config = CONFIG_SPI_I2C
+        elif not value and config == CONFIG_SPI_GPIO:
+            new_config = CONFIG_GPIO_ONLY
+        elif not value and config == CONFIG_SPI_I2C:
+            new_config = CONFIG_GPIO_I2C
+        if new_config != config:
+            self._interface_configuration(new_config)
 
     @property
     def i2c_bitrate(self):

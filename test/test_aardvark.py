@@ -4,6 +4,7 @@ import nose
 import array
 from mock import patch, call, ANY
 import pyaardvark
+from pyaardvark.constants import *
 from nose.tools import eq_, raises, assert_raises
 
 
@@ -140,15 +141,63 @@ class TestAardvark(object):
         api.py_aa_unique_id.assert_called_once_with(self.a.handle)
         eq_(unique_id_str, '0627-008473')
 
-    def test_configure(self, api):
-        api.py_aa_configure.return_value = 0
-        self.a.configure(4711)
-        api.py_aa_configure.assert_called_once_with(self.a.handle, 4711)
+    def test_enable_i2c_1(self, api):
+        api.py_aa_configure.return_value = CONFIG_SPI_GPIO
+        eq_(self.a.enable_i2c, False)
+        self.a.enable_i2c = True
+        api.py_aa_configure.assert_called_with(self.a.handle, CONFIG_SPI_I2C)
+
+    def test_enable_i2c_2(self, api):
+        api.py_aa_configure.return_value = CONFIG_GPIO_ONLY
+        eq_(self.a.enable_i2c, False)
+        self.a.enable_i2c = True
+        api.py_aa_configure.assert_called_with(self.a.handle, CONFIG_GPIO_I2C)
+
+    def test_enable_i2c_3(self, api):
+        api.py_aa_configure.return_value = CONFIG_GPIO_I2C
+        eq_(self.a.enable_i2c, True)
+        self.a.enable_i2c = False
+        api.py_aa_configure.assert_called_with(self.a.handle, CONFIG_GPIO_ONLY)
+
+    def test_enable_i2c_4(self, api):
+        api.py_aa_configure.return_value = CONFIG_SPI_I2C
+        eq_(self.a.enable_i2c, True)
+        self.a.enable_i2c = False
+        api.py_aa_configure.assert_called_with(self.a.handle, CONFIG_SPI_GPIO)
 
     @raises(IOError)
-    def test_configure_error(self, api):
+    def test_enable_i2c_error(self, api):
         api.py_aa_configure.return_value = -1
-        self.a.configure(0)
+        self.a.enable_i2c = True
+
+    def test_enable_spi_1(self, api):
+        api.py_aa_configure.return_value = CONFIG_GPIO_I2C
+        eq_(self.a.enable_spi, False)
+        self.a.enable_spi = True
+        api.py_aa_configure.assert_called_with(self.a.handle, CONFIG_SPI_I2C)
+
+    def test_enable_spi_2(self, api):
+        api.py_aa_configure.return_value = CONFIG_GPIO_ONLY
+        eq_(self.a.enable_spi, False)
+        self.a.enable_spi = True
+        api.py_aa_configure.assert_called_with(self.a.handle, CONFIG_SPI_GPIO)
+
+    def test_enable_spi_3(self, api):
+        api.py_aa_configure.return_value = CONFIG_SPI_GPIO
+        eq_(self.a.enable_spi, True)
+        self.a.enable_spi = False
+        api.py_aa_configure.assert_called_with(self.a.handle, CONFIG_GPIO_ONLY)
+
+    def test_enable_spi_4(self, api):
+        api.py_aa_configure.return_value = CONFIG_SPI_I2C
+        eq_(self.a.enable_spi, True)
+        self.a.enable_spi = False
+        api.py_aa_configure.assert_called_with(self.a.handle, CONFIG_GPIO_I2C)
+
+    @raises(IOError)
+    def test_enable_spi_error(self, api):
+        api.py_aa_configure.return_value = -1
+        self.a.enable_spi = True
 
     def test_i2c_bitrate(self, api):
         api.py_aa_i2c_bitrate.return_value = 100

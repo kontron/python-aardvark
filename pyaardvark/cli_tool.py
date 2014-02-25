@@ -40,6 +40,7 @@ def byte(value):
     return value
 
 def _i2c_common(a, args):
+    a.enable_i2c = True
     a.i2c_pullups = args.enable_i2c_pullups
     a.i2c_bitrate = args.bitrate
 
@@ -60,6 +61,7 @@ def i2c_rd(a, args):
     print(' '.join('%02x' % ord(c) for c in data))
 
 def spi(a, args):
+    a.enable_spi = True
     a.spi_configure_mode(pyaardvark.SPI_MODE_3)
     a.spi_bitrate = args.bitrate
     try:
@@ -147,7 +149,6 @@ def main():
         if args.func != scan:
             a = pyaardvark.open(args.device)
             a.target_power = args.enable_target_power
-            a.configure(pyaardvark.CONFIG_SPI_I2C)
 
         args.func(a, args)
     except IOError as e:
