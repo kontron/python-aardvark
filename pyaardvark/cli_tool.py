@@ -138,6 +138,7 @@ def main(args=None):
         logging.getLogger('pyaardvark').setLevel(logging.DEBUG)
 
     a = None
+    ret = 0
     try:
         if args.func != scan:
             a = pyaardvark.open(args.device)
@@ -146,9 +147,12 @@ def main(args=None):
         args.func(a, args)
     except IOError as e:
         print(e)
+        ret = 1
     finally:
         if a is not None:
             a.close()
+
+    return ret
 
 if __name__ == '__main__':
     main()
