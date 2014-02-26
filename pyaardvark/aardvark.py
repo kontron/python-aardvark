@@ -37,6 +37,10 @@ def error_string(error_number):
     else:
         return 'ERR_UNKNOWN_ERROR'
 
+def _raise_error_if_negative(val):
+    if val < 0:
+        raise IOError(error_string(val))
+
 def find_devices(filter_in_use=True):
     """Return a list of port numbers which can be used with :func:`open`.
 
@@ -108,8 +112,7 @@ class Aardvark(object):
 
     def __init__(self, port=0):
         ret, ver = api.py_aa_open_ext(port)
-        if ret < 0:
-            raise IOError(ret, error_string(ret))
+        _raise_error_if_negative(ret)
 
         #: A handle which is used as the first paramter for all calls to the
         #: underlying API.
@@ -155,8 +158,7 @@ class Aardvark(object):
                     to_version_str(version['software']))
             ret = ERR_INCOMPATIBLE_LIBRARY
 
-        if ret < 0:
-            raise IOError(ret, error_string(ret))
+        _raise_error_if_negative(ret)
 
     def __enter__(self):
         return self
@@ -189,8 +191,7 @@ class Aardvark(object):
 
     def _interface_configuration(self, value):
         ret = api.py_aa_configure(self.handle, value)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
         return ret
 
     @property
@@ -249,15 +250,13 @@ class Aardvark(object):
         """
 
         ret = api.py_aa_i2c_bitrate(self.handle, 0)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
         return ret
 
     @i2c_bitrate.setter
     def i2c_bitrate(self, value):
         ret = api.py_aa_i2c_bitrate(self.handle, value)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
     @property
     def i2c_pullups(self):
@@ -268,8 +267,7 @@ class Aardvark(object):
         pullup resistors.
         """
         ret = api.py_aa_i2c_pullup(self.handle, I2C_PULLUP_QUERY)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
     @i2c_pullups.setter
     def i2c_pullups(self, value):
@@ -278,8 +276,7 @@ class Aardvark(object):
         else:
             pullup = I2C_PULLUP_NONE
         ret = api.py_aa_i2c_pullup(self.handle, pullup)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
     @property
     def target_power(self):
@@ -290,8 +287,7 @@ class Aardvark(object):
         the switchable power pins.
         """
         ret = api.py_aa_target_power(self.handle, TARGET_POWER_QUERY)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
 
     @target_power.setter
@@ -301,8 +297,7 @@ class Aardvark(object):
         else:
             power = TARGET_POWER_NONE
         ret = api.py_aa_target_power(self.handle, power)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
     def i2c_master_write(self, i2c_address, data, flags=I2C_NO_FLAGS):
         """Make an I2C write access.
@@ -317,8 +312,7 @@ class Aardvark(object):
         data = array.array('B', data)
         ret = api.py_aa_i2c_write(self.handle, i2c_address,
                 flags, len(data), data)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
     def i2c_master_read(self, addr, length, flags=I2C_NO_FLAGS):
         """Make an I2C read access.
@@ -334,8 +328,7 @@ class Aardvark(object):
         data = array.array('B', (0,) * length)
         ret = api.py_aa_i2c_read(self.handle, addr, flags, length,
                 data)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
         del data[ret:]
         return data.tostring()
 
@@ -366,8 +359,7 @@ class Aardvark(object):
         """
         ret = api.py_aa_i2c_slave_enable(self.handle, slave_address,
                 self.BUFFER_SIZE, self.BUFFER_SIZE)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
     def poll(self, timeout_ms):
         """Wait for an event to occur.
@@ -375,8 +367,7 @@ class Aardvark(object):
         Returns a bitfield of event flags.
         """
         ret = api.py_aa_async_poll(self.handle, timeout_ms)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
         return ret
 
     def i2c_slave_read(self):
@@ -387,8 +378,7 @@ class Aardvark(object):
         data = array.array('B', (0,) * self.BUFFER_SIZE)
         (ret, slave_addr) = api.py_aa_i2c_slave_read(self.handle, self.BUFFER_SIZE,
                 data)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
         del data[ret:]
         return (slave_addr, data.tostring())
 
@@ -402,21 +392,18 @@ class Aardvark(object):
         The power-on default value is 1000 kHz.
         """
         ret = api.py_aa_spi_bitrate(self.handle, 0)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
         return ret
 
     @spi_bitrate.setter
     def spi_bitrate(self, value):
         ret = api.py_aa_spi_bitrate(self.handle, value)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
     def spi_configure(self, polarity, phase, bitorder):
         """Configure the SPI interface."""
         ret = api.py_aa_spi_configure(self.handle, polarity, phase, bitorder)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
 
     def spi_configure_mode(self, spi_mode):
         """Configure the SPI interface by the well known SPI modes."""
@@ -435,8 +422,7 @@ class Aardvark(object):
         data_in = array.array('B', (0,) * len(data_out))
         ret = api.py_aa_spi_write(self.handle, len(data_out), data_out,
                 len(data_in), data_in)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
         return data_in.tostring()
 
     def spi_ss_polarity(self, polarity):
@@ -445,5 +431,4 @@ class Aardvark(object):
         Please note, that this only affects the master functions.
         """
         ret = api.py_aa_spi_master_ss_polarity(self.handle, polarity)
-        if ret < 0:
-            raise IOError(error_string(ret))
+        _raise_error_if_negative(ret)
