@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
 from subprocess import Popen, PIPE
@@ -14,6 +15,9 @@ def get_git_version():
         pass
     raise AssertionError('Could not find the version number')
 
+with open('README.rst') as f:
+    readme = f.read()
+
 def main():
     version = get_git_version()
 
@@ -24,6 +28,7 @@ def main():
     setup(name = 'pyaardvark',
             version = version,
             description = 'Total Phase Aardvark library',
+            long_description = readme,
             author = 'Michael Walle',
             author_email = 'michael.walle@kontron.com',
             packages = find_packages(),
@@ -39,15 +44,12 @@ def main():
                 'Programming Language :: Python :: 2.7',
                 'Topic :: Software Development :: Libraries :: Python Modules',
             ],
-            package_data = {
-                'pyaardvark.ext':
-                    ['aardvark.so', 'LICENSE.txt']
-            },
             entry_points = {
                 'console_scripts': [
                     'aardvark = pyaardvark.cli_tool:main',
                 ]
-            }
+            },
+            test_suite = 'tests',
     )
 
 if __name__ == '__main__':

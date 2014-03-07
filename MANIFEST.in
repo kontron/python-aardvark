@@ -1,0 +1,6 @@
+include AUTHORS
+include COPYING
+include README.rst
+include pyaardvark/ext/LICENSE.txt
+include pyaardvark/ext/*/aardvark.so
+recursive-include docs *
