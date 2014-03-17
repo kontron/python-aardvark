@@ -96,7 +96,7 @@ def main(args=None):
 
     # spi subcommand
     subparser = _sub.add_parser('spi', help='SPI commands')
-    subparser.add_argument('data', nargs='+', metavar="DATA",
+    subparser.add_argument('data', nargs='+', type=byte, metavar="DATA",
             help='byte to write')
     subparser.set_defaults(func=spi)
 
