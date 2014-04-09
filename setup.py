@@ -51,4 +51,5 @@ setup(name = name,
             ]
         },
         test_suite = 'tests',
+        include_package_data = True,
 )
