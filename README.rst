@@ -16,18 +16,20 @@ Instead, this binding tries to be more pythonic.
 
 Features
 --------
- * simple interface
- * CLI tool for easy testing
- * |I2C| and SPI support
- * support for control signals like target power and internal |I2C| pullups
- * rudimental |I2C| slave support
+
+* simple interface
+* CLI tool for easy testing
+* |I2C| and SPI support
+* support for control signals like target power and internal |I2C| pullups
+* rudimental |I2C| slave support
 
 
 (Still) Missing Features
 ------------------------
- * more documentation (please bear with me)
- * GPIO support
- * I2C monitor support
+
+* more documentation (please bear with me)
+* GPIO support
+* I2C monitor support
 
 
 Documentation
@@ -52,10 +54,11 @@ Contributions are always welcome. You may send patches directly (eg. ``git
 send-email``), do a github pull request or just file an issue.
 
 If you are doing code changes or additions please:
- * respect the coding style (eg. PEP8),
- * provide well-formed commit message (see `this blog post
-   <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_.)
- * add a Signed-off-by line (eg. ``git commit -s``)
+
+* respect the coding style (eg. PEP8),
+* provide well-formed commit message (see `this blog post
+  <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_.)
+* add a Signed-off-by line (eg. ``git commit -s``)
 
 
 License
