@@ -36,12 +36,26 @@ Documentation
 You can find the most up to date documentation at:
 http://pyaardvark.rtfd.org
 
+
 Requirements
 ------------
 
 You need an either a x86 or an amd64 machine. This is because the binding
 uses a binary-only module supplied by the manufacturer, Total Phase.
 Additonally, only Linux is supported at the moment.
+
+
+Contributing
+------------
+
+Contributions are always welcome. You may send patches directly (eg. ``git
+send-email``), do a github pull request or just file an issue.
+
+If you are doing code changes or additions please:
+ * respect the coding style (eg. PEP8),
+ * provide well-formed commit message (see `this blog post
+   <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_.)
+ * add a Signed-off-by line (eg. ``git commit -s``)
 
 
 License
