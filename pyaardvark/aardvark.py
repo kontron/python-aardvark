@@ -17,16 +17,28 @@
 import time
 import array
 import logging
+import sys
 
 from .constants import *
 
-try:
-    from .ext.linux32 import aardvark as api
-except ImportError:
+if sys.platform.startswith('linux'):
     try:
-        from .ext.linux64 import aardvark as api
-    except:
-        api = None
+        from .ext.linux32 import aardvark as api
+    except ImportError:
+        try:
+            from .ext.linux64 import aardvark as api
+        except:
+            api = None
+elif sys.platform.startswith('win32'):
+    try:
+        from .ext.win32 import aardvark as api
+    except ImportError:
+        try:
+            from .ext.win64 import aardvark as api
+        except:
+            api = None
+else:
+    api = None
 
 log = logging.getLogger(__name__)
 
