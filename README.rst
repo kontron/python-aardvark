@@ -44,7 +44,7 @@ Requirements
 
 You need an either a x86 or an amd64 machine. This is because the binding
 uses a binary-only module supplied by the manufacturer, Total Phase.
-Additonally, only Linux is supported at the moment.
+Linux and Windows is supported.
 
 
 Contributing
