@@ -17,16 +17,33 @@
 import time
 import array
 import logging
+import platform
 
 from .constants import *
 
-try:
-    from .ext.linux32 import aardvark as api
-except ImportError:
+
+system_type = platform.system()
+if system_type == 'Linux':
     try:
-        from .ext.linux64 import aardvark as api
-    except:
-        api = None
+        from .ext.linux32 import aardvark as api
+    except ImportError:
+        try:
+            from .ext.linux64 import aardvark as api
+        except:
+            api = None
+elif system_type in ('Windows', 'Microsoft'):
+    try:
+        from .ext.win32 import aardvark as api
+    except ImportError:
+        try:
+            from .ext.win64 import aardvark as api
+        except:
+            api = None
+else:
+    api = None
+
+if not api:
+    raise ImportError("Error Importing Total Phase Aardvark Binary Interface")
 
 log = logging.getLogger(__name__)
 
