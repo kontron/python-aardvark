@@ -3,4 +3,5 @@ include COPYING
 include README.rst
 include pyaardvark/ext/LICENSE.txt
 include pyaardvark/ext/*/aardvark.so
+include pyaardvark/ext/*/aardvark.pyd
 recursive-include docs *
