@@ -40,6 +40,10 @@ elif sys.platform.startswith('win32'):
 else:
     api = None
 
+if not api:
+    raise RuntimeError('Unable to find suitable binary interface. '
+            'Unsupported platform?')
+
 log = logging.getLogger(__name__)
 
 def error_string(error_number):
