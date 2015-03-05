@@ -76,7 +76,10 @@ def find_devices(filter_in_use=True):
     # first fetch the number of attached devices, so we can create a buffer
     # with the exact amount of entries. api expects array of u16
     num_devices = api.py_aa_find_devices(0, array.array('H'))
-    assert num_devices > 0
+
+    # return an empty list if no device is connected
+    if num_devices == 0:
+        return list()
 
     devices = array.array('H', (0,) * num_devices)
     num_devices = api.py_aa_find_devices(len(devices), devices)
