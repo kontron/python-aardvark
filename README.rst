@@ -22,6 +22,7 @@ Features
 * |I2C| and SPI support
 * support for control signals like target power and internal |I2C| pullups
 * rudimental |I2C| slave support
+* Support for Linux, Windows and OSX
 
 
 (Still) Missing Features
