@@ -1,5 +1,12 @@
 language: python
 python:
-  - "2.7"
+- '2.7'
 install: true
 script: nosetests
+deploy:
+  provider: pypi
+  user: mwalle
+  password:
+    secure: dWlSw0T1L3o5bq2AqU4Jeke32tgy6oDBbrTld54FGUgLg5nDuDyfBXUD12qBOZysJpVMMycjCw9gWl5J4uH2sX29bqwjr+pjYlPs0BrGlFv5XWG1ayZ9piKoGv/OBouE/S5N4Lu1w2dv7pRW2J33Iw5pPaAePRZx7MumCAsp0I0=
+  on:
+    tags: true
