@@ -1,4 +1,4 @@
-# Copyright (c) 2014  Kontron Europe GmbH
+# Copyright (c) 2014-2015  Kontron Europe GmbH
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -65,8 +65,14 @@ def _raise_error_if_negative(val):
     if val < 0:
         raise IOError(error_string(val))
 
+def _unique_id_str(unique_id):
+    id1 = unique_id / 1000000
+    id2 = unique_id % 1000000
+    return '%04d-%06d' % (id1, id2)
+
 def find_devices(filter_in_use=True):
-    """Return a list of port numbers which can be used with :func:`open`.
+    """Return a list of tuples with port numbers and unique Ids. The port
+    number can be used with :func:`open`.
 
     If *filter_in_use* parameter is `True` devices which are already opened
     will be filtered from the list. If set to `False`, the port numbers are
@@ -90,15 +96,20 @@ def find_devices(filter_in_use=True):
         return list()
 
     devices = array.array('H', (0,) * num_devices)
-    num_devices = api.py_aa_find_devices(len(devices), devices)
+    unique_ids = array.array('I', (0,) * num_devices)
+    num_devices = api.py_aa_find_devices_ext(len(devices), len(unique_ids),
+            devices, unique_ids)
     assert num_devices > 0
 
     del devices[num_devices:]
 
+    devices = zip(devices, map(_unique_id_str, unique_ids))
+
     if filter_in_use:
-        devices = [ d for d in devices if not d & PORT_NOT_FREE ]
+        devices = [ (d, u) for (d, u) in devices if not d & PORT_NOT_FREE ]
     else:
-        devices = [ d & ~PORT_NOT_FREE for d in devices]
+        devices = [ (d & ~PORT_NOT_FREE, u) for (d, u) in devices]
+
     return devices
 
 def open(port=None, serial_number=None):
@@ -121,12 +132,16 @@ def open(port=None, serial_number=None):
     if port is None and serial_number is None:
         dev = Aardvark()
     elif serial_number is not None:
-        for port in find_devices():
+        for (port, unique_id) in find_devices():
+            if unique_id != serial_number:
+                continue
             dev = Aardvark(port)
-            if dev.unique_id_str() == serial_number:
-                break
-            dev.close()
+            break
         else:
+            raise IOError(error_string(ERR_UNABLE_TO_OPEN))
+
+        if dev.unique_id_str() != serial_number:
+            dev.close()
             raise IOError(error_string(ERR_UNABLE_TO_OPEN))
     else:
         dev = Aardvark(port)
@@ -211,10 +226,7 @@ class Aardvark(object):
         """Return the unique identifier. But unlike :func:`unique_id`, the ID
         is returned as a string which has the format NNNN-MMMMMMM.
         """
-        unique_id = self.unique_id()
-        id1 = unique_id / 1000000
-        id2 = unique_id % 1000000
-        return '%04d-%06d' % (id1, id2)
+        return _unique_id_str(self.unique_id())
 
     def _interface_configuration(self, value):
         ret = api.py_aa_configure(self.handle, value)

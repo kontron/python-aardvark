@@ -24,25 +24,33 @@ def test_open_default(api):
 @patch('pyaardvark.aardvark.api', autospec=True)
 def test_find_devices_valid_devices(api):
     def f(num, devices):
+        return 2
+
+    def f_ext(num, num_ids, devices, ids):
         if num >= 2:
             devices[0] = 42 | pyaardvark.PORT_NOT_FREE
+            ids[0] = 1234567890
             devices[1] = 4711
+            ids[1] = 1111222222
         return 2
 
     api.py_aa_find_devices.side_effect = f
+    api.py_aa_find_devices_ext.side_effect = f_ext
 
     devs = pyaardvark.find_devices()
     api.py_aa_find_devices.assert_has_calls([
         call(0, array.array('H')),
-        call(2, ANY),
+    ])
+    api.py_aa_find_devices_ext.assert_has_calls([
+        call(2, 2, ANY, ANY),
     ])
     eq_(len(devs), 1)
-    eq_(devs[0], 4711)
+    eq_(devs[0][0], 4711)
 
     devs = pyaardvark.find_devices(filter_in_use=False)
     eq_(len(devs), 2)
-    eq_(devs[0], 42)
-    eq_(devs[1], 4711)
+    eq_(devs[0][0], 42)
+    eq_(devs[1][0], 4711)
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 def test_open_port(api):
@@ -58,11 +66,16 @@ def test_open_serial_number(api):
             4711: 1111222222,
             5: 3333444444,
     }
-    def find_devices(_num, devs):
-        for i, dev in enumerate(devices.keys()):
-            if _num <= i:
-                break
-            devs[i] = dev
+
+    def f(_num, devs):
+        return len(devices)
+
+    def f_ext(_num, _num_ids, devs, ids):
+        for i, (dev, unique) in enumerate(devices.items()):
+            if _num > i:
+                devs[i] = dev
+            if _num_ids > i:
+                ids[i] = unique
         return len(devices)
 
     def open(handle):
@@ -71,7 +84,8 @@ def test_open_serial_number(api):
     def unique_id(handle):
         return devices[handle]
 
-    api.py_aa_find_devices.side_effect = find_devices
+    api.py_aa_find_devices.side_effect = f
+    api.py_aa_find_devices_ext.side_effect = f_ext
     api.py_aa_open_ext.side_effect = open
     api.py_aa_unique_id.side_effect = unique_id
 

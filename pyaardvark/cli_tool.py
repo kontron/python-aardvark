@@ -67,10 +67,8 @@ def spi(a, args):
     print(' '.join('%02x' % ord(c) for c in data))
 
 def scan(a, args):
-    for port in pyaardvark.find_devices():
-        dev = pyaardvark.open(port)
-        print('Device #%d: %s' % (port, dev.unique_id_str()))
-        dev.close()
+    for (port, unique_id) in pyaardvark.find_devices(filter_in_use=False):
+        print('Device #%d: %s' % (port, unique_id))
 
 def main(args=None):
     parser = argparse.ArgumentParser(
