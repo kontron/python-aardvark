@@ -71,8 +71,12 @@ def _unique_id_str(unique_id):
     return '%04d-%06d' % (id1, id2)
 
 def find_devices(filter_in_use=True):
-    """Return a list of tuples with port numbers and unique Ids. The port
-    number can be used with :func:`open`.
+    """Return list of a dictionaries that contains the following key/value pairs:
+
+    `port` - the port number that can be used with :func:`open`.
+    `serial_number` - the serial number that can be used as `serial_number`
+    with :func:`open`.
+    `in_use` - a boolean value that indicates that devices is currently in use.
 
     If *filter_in_use* parameter is `True` devices which are already opened
     will be filtered from the list. If set to `False`, the port numbers are
@@ -103,12 +107,14 @@ def find_devices(filter_in_use=True):
 
     del devices[num_devices:]
 
-    devices = zip(devices, map(_unique_id_str, unique_ids))
-
-    if filter_in_use:
-        devices = [ (d, u) for (d, u) in devices if not d & PORT_NOT_FREE ]
-    else:
-        devices = [ (d & ~PORT_NOT_FREE, u) for (d, u) in devices]
+    devices = [
+            {   'port': t[0] & ~PORT_NOT_FREE,
+                'in_use': t[0] & PORT_NOT_FREE != 0,
+                'serial_number': _unique_id_str(t[1]),
+            }
+            for t in zip(devices, unique_ids)
+            if filter_in_use is False or filter_in_use and d & PORT_NOT_FREE
+        ]
 
     return devices
 
@@ -132,10 +138,10 @@ def open(port=None, serial_number=None):
     if port is None and serial_number is None:
         dev = Aardvark()
     elif serial_number is not None:
-        for (port, unique_id) in find_devices():
-            if unique_id != serial_number:
+        for device in find_devices():
+            if device['serial_number'] != serial_number:
                 continue
-            dev = Aardvark(port)
+            dev = Aardvark(device['port'])
             break
         else:
             raise IOError(error_string(ERR_UNABLE_TO_OPEN))
