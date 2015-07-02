@@ -70,21 +70,25 @@ def _unique_id_str(unique_id):
     id2 = unique_id % 1000000
     return '%04d-%06d' % (id1, id2)
 
-def find_devices(filter_in_use=True):
-    """Return a list of tuples with port numbers and unique Ids. The port
-    number can be used with :func:`open`.
+def find_devices():
+    """Return a list of dictionaries. Each dictionary represents one device.
 
-    If *filter_in_use* parameter is `True` devices which are already opened
-    will be filtered from the list. If set to `False`, the port numbers are
-    still included in the returned list and the user may get an
-    :class:`IOError` if the port number is used with :func:`open`.
+    The dictionary contains the following keys: port, unique_id and in_use.
+    `port` can be used with :func:`open`. `serial_number` is the serial number
+    of the device (and can also be used with :func:`open`) and `in_use`
+    indicates whether the device was opened before and can currently not be
+    opened.
 
     .. note::
 
-       There is no guarantee, that the returned port numbers are still valid
-       when you open the device with it. Eg. it may be disconnected from the
-       machine after you call :func:`find_devices` but before you call
-       :func:`open`.
+       There is no guarantee, that the returned information is still valid
+       when you open the device. Esp. if you open a device by the port, the
+       unique_id may change because you've just opened another device. Eg. it
+       may be disconnected from the machine after you call :func:`find_devices`
+       but before you call :func:`open`.
+
+       To open a device by its serial number, you should use the :func:`open`
+       with the `serial_number` parameter.
     """
 
     # first fetch the number of attached devices, so we can create a buffer
@@ -95,20 +99,23 @@ def find_devices(filter_in_use=True):
     if num_devices == 0:
         return list()
 
-    devices = array.array('H', (0,) * num_devices)
+    ports = array.array('H', (0,) * num_devices)
     unique_ids = array.array('I', (0,) * num_devices)
-    num_devices = api.py_aa_find_devices_ext(len(devices), len(unique_ids),
-            devices, unique_ids)
+    num_devices = api.py_aa_find_devices_ext(len(ports), len(unique_ids),
+            ports, unique_ids)
     assert num_devices > 0
 
-    del devices[num_devices:]
+    del ports[num_devices:]
+    del unique_ids[num_devices:]
 
-    devices = zip(devices, map(_unique_id_str, unique_ids))
-
-    if filter_in_use:
-        devices = [ (d, u) for (d, u) in devices if not d & PORT_NOT_FREE ]
-    else:
-        devices = [ (d & ~PORT_NOT_FREE, u) for (d, u) in devices]
+    devices = list()
+    for port, uid in zip(ports, unique_ids):
+        in_use = bool(port & PORT_NOT_FREE)
+        dev = dict(
+                port=port & ~PORT_NOT_FREE,
+                serial_number=_unique_id_str(uid),
+                in_use=in_use)
+        devices.append(dev)
 
     return devices
 
@@ -126,20 +133,34 @@ def open(port=None, serial_number=None):
     find the number on the device itself or in the in the corresponding USB
     property. The serial number is a string which looks like `NNNN-MMMMMMM`.
 
-    Raises an :class:`IOError` if the port number (or serial number) does not
-    exist, is already connected or an incompatible device is found.
+    Raises an :class:`IOError` if the port (or serial number) does not exist,
+    is already connected or an incompatible device is found.
+
+    .. note::
+
+       There is a small chance that this function raises an :class:`IOError`
+       although the correct device is available and not opened. The
+       open-by-serial-number method works by scanning the devices. But as
+       explained in :func:`find_devices`, the returned information may be
+       outdated. Therefore, :func:`open` checks the serial number once the
+       device is opened and if it is not the expected one, raises
+       :class:`IOError`. No retry mechanism is implemented.
+
+       As long as nobody comes along with a better idea, this failure case is
+       up to the user.
     """
     if port is None and serial_number is None:
         dev = Aardvark()
     elif serial_number is not None:
-        for (port, unique_id) in find_devices():
-            if unique_id != serial_number:
-                continue
-            dev = Aardvark(port)
-            break
+        for d in find_devices():
+            if d['serial_number'] == serial_number:
+                break
         else:
             raise IOError(error_string(ERR_UNABLE_TO_OPEN))
 
+        dev = Aardvark(d['port'])
+
+        # make sure we opened the correct device
         if dev.unique_id_str() != serial_number:
             dev.close()
             raise IOError(error_string(ERR_UNABLE_TO_OPEN))

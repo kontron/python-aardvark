@@ -44,13 +44,13 @@ def test_find_devices_valid_devices(api):
     api.py_aa_find_devices_ext.assert_has_calls([
         call(2, 2, ANY, ANY),
     ])
-    eq_(len(devs), 1)
-    eq_(devs[0][0], 4711)
-
-    devs = pyaardvark.find_devices(filter_in_use=False)
     eq_(len(devs), 2)
-    eq_(devs[0][0], 42)
-    eq_(devs[1][0], 4711)
+    eq_(devs[0]['port'], 42)
+    eq_(devs[0]['serial_number'], '1234-567890')
+    eq_(devs[0]['in_use'], True)
+    eq_(devs[1]['port'], 4711)
+    eq_(devs[1]['serial_number'], '1111-222222')
+    eq_(devs[1]['in_use'], False)
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 def test_open_port(api):
