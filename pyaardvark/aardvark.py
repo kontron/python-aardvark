@@ -421,12 +421,19 @@ class Aardvark(object):
                 self.BUFFER_SIZE, self.BUFFER_SIZE)
         _raise_error_if_negative(ret)
 
-    def poll(self, timeout_ms):
+    def poll(self, timeout=None):
         """Wait for an event to occur.
+
+        If `timeout` is given, if specifies the length of time in milliseconds
+        which the function will wait for events before returing. If `timeout`
+        is omitted, negative or None, the call will block until there is an
+        event.
 
         Returns a bitfield of event flags.
         """
-        ret = api.py_aa_async_poll(self.handle, timeout_ms)
+        if timeout is None:
+            timeout = -1
+        ret = api.py_aa_async_poll(self.handle, timeout)
         _raise_error_if_negative(ret)
         return ret
 
