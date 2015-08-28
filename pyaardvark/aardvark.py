@@ -408,19 +408,6 @@ class Aardvark(object):
         self.i2c_master_write(i2c_address, data, I2C_NO_STOP)
         return self.i2c_master_read(i2c_address, length)
 
-    def i2c_slave_enable(self, slave_address):
-        """Enable slave mode.
-
-        The device will respond to the specified slave_address if it is
-        addressed.
-
-        You can wait for the data with `poll` and get it with
-        `i2c_slave_read`.
-        """
-        ret = api.py_aa_i2c_slave_enable(self.handle, slave_address,
-                self.BUFFER_SIZE, self.BUFFER_SIZE)
-        _raise_error_if_negative(ret)
-
     def poll(self, timeout=None):
         """Wait for an event to occur.
 
@@ -444,6 +431,24 @@ class Aardvark(object):
             if ret & event:
                 events.append(event)
         return events
+
+    def enable_i2c_slave(self, slave_address):
+        """Enable I2C slave mode.
+
+        The device will respond to the specified slave_address if it is
+        addressed.
+
+        You can wait for the data with `poll` and get it with
+        `i2c_slave_read`.
+        """
+        ret = api.py_aa_i2c_slave_enable(self.handle, slave_address,
+                self.BUFFER_SIZE, self.BUFFER_SIZE)
+        _raise_error_if_negative(ret)
+
+    def disable_i2c_slave(self):
+        """Disable I2C slave mode."""
+        ret = api.py_aa_i2c_slave_disable(self.handle)
+        _raise_error_if_negative(ret)
 
     def i2c_slave_read(self):
         """Read the bytes from an I2C slave reception.
