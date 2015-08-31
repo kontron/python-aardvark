@@ -71,6 +71,27 @@ def scan(a, args):
         dev['in_use'] = ' [IN USE]' if dev['in_use'] else ''
         print('Device #%(port)d: %(serial_number)s%(in_use)s' % dev)
 
+def monitor(a, args):
+    def data_to_str(d):
+        if d == pyaardvark.I2C_MONITOR_START:
+            return 'STA'
+        elif d == pyaardvark.I2C_MONITOR_STOP:
+            return 'STP\n'
+        elif d == pyaardvark.I2C_MONITOR_NACK:
+            return '*'
+        else:
+            return '%02x' % d
+
+    a.enable_i2c_monitor()
+    try:
+        while True:
+            a.poll()
+            data = a.i2c_monitor_read()
+            data = map(data_to_str, data)
+            print(*data, end='')
+    except KeyboardInterrupt:
+        print()
+
 def main(args=None):
     parser = argparse.ArgumentParser(
             description='Total Phase I2C/SPI host adapter CLI.')
@@ -92,6 +113,10 @@ def main(args=None):
     subparser = _sub.add_parser('scan',
             help='Find attached Aardvark devices')
     subparser.set_defaults(func=scan)
+
+    # monitor sub command
+    subparser = _sub.add_parser('monitor', help='Listen on I2C bus')
+    subparser.set_defaults(func=monitor)
 
     # spi subcommand
     subparser = _sub.add_parser('spi', help='SPI commands')

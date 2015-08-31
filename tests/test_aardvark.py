@@ -383,6 +383,45 @@ class TestAardvark(object):
         api.py_aa_i2c_slave_read.return_value = (-1, 0)
         self.a.i2c_slave_read()
 
+    def test_enable_i2c_monitor(self, api):
+        api.py_aa_i2c_monitor_enable.return_value = 0
+        self.a.enable_i2c_monitor()
+        api.py_aa_i2c_monitor_enable.assert_called_once_with(self.a.handle)
+
+    @raises(IOError)
+    def test_enable_i2c_monitor_error(self, api):
+        api.py_aa_i2c_monitor_enable.return_value = -1
+        self.a.enable_i2c_monitor()
+
+    def test_disable_i2c_monitor(self, api):
+        api.py_aa_i2c_monitor_disable.return_value = 0
+        self.a.disable_i2c_monitor()
+        api.py_aa_i2c_monitor_disable.assert_called_once_with(self.a.handle)
+
+    @raises(IOError)
+    def test_disable_i2c_monitor_error(self, api):
+        api.py_aa_i2c_monitor_disable.return_value = -1
+        self.a.disable_i2c_monitor()
+
+    def test_i2c_monitor_read(self, api):
+        def i2c_monitor_read(_handle, length, data):
+            eq_(data, array.array('B', (0,) * length))
+            length = 3
+            for i in range(length):
+                data[i] = i
+            return length
+
+        api.py_aa_i2c_monitor_read.side_effect = i2c_monitor_read
+        ret = self.a.i2c_monitor_read()
+        api.py_aa_i2c_monitor_read.assert_called_once_with(
+                self.a.handle, self.a.BUFFER_SIZE, ANY)
+        eq_(ret, ([0, 1, 2]))
+
+    @raises(IOError)
+    def test_i2c_monitor_read_error(self, api):
+        api.py_aa_i2c_monitor_read.return_value = -1
+        self.a.i2c_monitor_read()
+
     def test_spi_bitrate(self, api):
         api.py_aa_spi_bitrate.return_value = 1000
         self.a.spi_bitrate = 4711

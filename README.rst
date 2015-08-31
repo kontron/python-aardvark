@@ -32,7 +32,6 @@ Features
 
 * more documentation (please bear with me)
 * GPIO support
-* I2C monitor support
 
 
 Documentation
