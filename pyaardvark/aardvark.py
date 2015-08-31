@@ -438,7 +438,7 @@ class Aardvark(object):
         The device will respond to the specified slave_address if it is
         addressed.
 
-        You can wait for the data with `poll` and get it with
+        You can wait for the data with :func:`poll` and get it with
         `i2c_slave_read`.
         """
         ret = api.py_aa_i2c_slave_enable(self.handle, slave_address,
