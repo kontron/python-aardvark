@@ -98,7 +98,10 @@ def main(args=None):
     parser.add_argument('-v', action='store_true', dest='verbose',
             help='be more verbose')
     parser.add_argument('-d', '--device', type=int, dest='device', default=0,
-            help='set device')
+            help='set device number')
+    parser.add_argument('-s', '--serial-number', type=str,
+            dest='serial_number', default=None,
+            help='set serial number. Takes precedence over port number.')
     parser.add_argument('-b', '--bitrate', type=int, dest='bitrate',
             default=100, help='set bitrate in kHz')
     parser.add_argument('-p', '--enable-i2c-pullups', action='store_true',
@@ -165,7 +168,7 @@ def main(args=None):
     ret = 0
     try:
         if args.func != scan:
-            a = pyaardvark.open(args.device)
+            a = pyaardvark.open(args.device, serial_number=args.serial_number)
             a.target_power = args.enable_target_power
 
         args.func(a, args)
