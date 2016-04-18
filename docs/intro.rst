@@ -81,7 +81,7 @@ be GPIOs or the actual interface. So if, for example you want to use both
   a.enable_i2c = True
   a.enable_spi = True
 
-After you enabled the |I2C| interface you can issue transactions on the bus:
+After you enabled the |I2C| interface you can issue transactions on the bus::
 
   a.i2c_master_write(0x50, '\x00\x02\0x00\x00')
 
