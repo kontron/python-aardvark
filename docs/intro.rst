@@ -99,3 +99,22 @@ Releasing the device can be done with :meth:`pyaardvark.Aardvark.close`::
 
   a.close()
 
+FAQ
+---
+
+Convert data to a string
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Most parameters of the pyaardvark API take (byte) strings (eg.
+:meth:`pyaardvark.Aardvark.i2c_master_write_read` etc). You can convert
+iterables to strings using the built-in chr function::
+
+  data = (0x01, 0xaf, 0xff)
+  data = ''.join(chr(c) for c in data) # data is '\x01\xaf\xff'
+  a.i2c_master_write(0x50, data)       # writes 1h, AFh, FFh to address 50h
+
+To convert a character/string to a number you can use the build-in ord
+function::
+
+  data_str = a.i2c_master_read(0x50, 3) # data_str is '\xc0\x01\xff'
+  data = [ord(b) for b in data_str]     # data is [192, 1, 255]
