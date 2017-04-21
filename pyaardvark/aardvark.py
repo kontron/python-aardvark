@@ -228,8 +228,11 @@ class Aardvark(object):
                     to_version_str(version['sw_req_by_fw']),
                     to_version_str(version['software']))
             ret = ERR_INCOMPATIBLE_LIBRARY
-
         _raise_error_if_negative(ret)
+
+        # Initialize Aardvark to a well-known state
+        # SPI/I2C is the default configuration after power-cycle
+        self._interface_configuration(CONFIG_SPI_I2C)
 
         # Initialize shadow variables
         self._i2c_slave_response = None

@@ -10,6 +10,7 @@ from nose.tools import eq_, raises, assert_raises
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 def test_open_default(api):
+    api.py_aa_configure.return_value = 1
     api.py_aa_open_ext.return_value = (42, (0,) * 6)
     a = pyaardvark.open()
     api.py_aa_open_ext.assert_called_once_with(0)
@@ -48,6 +49,7 @@ def test_find_devices_valid_devices(api):
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 def test_open_port(api):
+    api.py_aa_configure.return_value = 1
     api.py_aa_open_ext.return_value = (42, (0,) * 6)
     a = pyaardvark.open(4711)
     api.py_aa_open_ext.assert_called_once_with(4711)
@@ -55,6 +57,7 @@ def test_open_port(api):
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 def test_open_serial_number(api):
+    api.py_aa_configure.return_value = 1
     devices = {
             42: 1234567890,
             4711: 1111222222,
@@ -93,6 +96,7 @@ def test_open_serial_number(api):
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 def test_open_versions(api):
+    api.py_aa_configure.return_value = 1
     api.py_aa_open_ext.return_value = (1, (0x101, 0x202, 0x303, 0, 0, 0))
     a = pyaardvark.open()
     eq_(a.api_version, '1.01')
@@ -102,18 +106,21 @@ def test_open_versions(api):
 @patch('pyaardvark.aardvark.api', autospec=True)
 @raises(IOError)
 def test_open_error(api):
+    api.py_aa_configure.return_value = 1
     api.py_aa_open_ext.return_value = (-1, (0,) * 6)
     pyaardvark.open()
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 @raises(IOError)
 def test_open_version_check_firmware(api):
+    api.py_aa_configure.return_value = 1
     api.py_aa_open_ext.return_value = (1, (0, 100, 0, 0, 200, 0))
     pyaardvark.open()
 
 @patch('pyaardvark.aardvark.api', autospec=True)
 @raises(IOError)
 def test_open_version_check_api(api):
+    api.py_aa_configure.return_value = 1
     api.py_aa_open_ext.return_value = (1, (100, 0, 0, 200, 0, 0))
     pyaardvark.open()
 
@@ -121,6 +128,7 @@ def test_open_version_check_api(api):
 class TestAardvark(object):
     @patch('pyaardvark.aardvark.api', autospec=True)
     def setup(self, api):
+        api.py_aa_configure.return_value = 1
         api.py_aa_open_ext.return_value = (1, (0,) * 6)
         self.a = pyaardvark.open()
 
@@ -130,6 +138,7 @@ class TestAardvark(object):
         api.py_aa_close.assert_called_once_with(handle)
 
     def test_context_manager(self, api):
+        api.py_aa_configure.return_value = 1
         api.py_aa_open_ext.return_value = (1, (0,) * 6)
         with pyaardvark.open() as a:
             eq_(self.a.handle, api.py_aa_open_ext.return_value[0])
