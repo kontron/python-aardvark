@@ -617,5 +617,69 @@ class TestAardvark(object):
         api.py_aa_gpio_set.return_value = -1
         self.a.gpio_toggle(GPIO_SCK)
 
+    def test_enabled_gpio_pullups_identical(self, api):
+        used_gpios = []
+        api.py_aa_gpio_pullup.return_value = 0
+        self.a.enabled_gpio_pullups = used_gpios
+        assert api.py_aa_gpio_pullup.call_count == 0
+        eq_(self.a.enabled_gpio_pullups, used_gpios)
+
+    def test_enabled_gpio_pullups_changed(self, api):
+        used_gpios = [GPIO_SDA, GPIO_SCL]
+        api.py_aa_gpio_pullup.return_value = 0
+        self.a.enabled_gpio_pullups = used_gpios
+        api.py_aa_gpio_pullup.assert_called_with(self.a.handle, sum(used_gpios))
+        eq_(self.a.enabled_gpio_pullups, used_gpios)
+
+    @raises(IOError)
+    def test_enabled_gpio_pullups_changed_error(self, api):
+        used_gpios = [GPIO_SDA, GPIO_SCL]
+        api.py_aa_gpio_pullup.return_value = -1
+        self.a.enabled_gpio_pullups = used_gpios
+        api.py_aa_gpio_pullup.assert_called_with(self.a.handle, sum(used_gpios))
+        eq_(self.a.enabled_gpio_pullups, used_gpios)
+
+    def test_gpio_poll(self, api):
+        high_gpios = [GPIO_SCK, GPIO_SS]
+        api.py_aa_gpio_change.return_value = sum(high_gpios)
+        timeout = 42
+        ret = self.a.gpio_poll(timeout)
+        api.py_aa_gpio_change.assert_called_once_with(self.a.handle, timeout)
+        eq_(ret, high_gpios)
+
+    @raises(IOError)
+    def test_gpio_poll_error(self, api):
+        api.py_aa_gpio_change.return_value = -1
+        timeout = 23
+        self.a.gpio_poll(timeout)
+        api.py_aa_gpio_change.assert_called_once_with(self.a.handle, timeout)
+
+    def test_gpio_get_output_low(self, api):
+        gpio = GPIO_MOSI
+        api.py_aa_gpio_direction.return_value = 0
+        self.a.configured_gpio_outputs = [gpio]
+        ret = self.a.gpio_get(gpio)
+        eq_(ret, False)
+
+    def test_gpio_get_output_high(self, api):
+        gpio = GPIO_MISO
+        api.py_aa_gpio_direction.return_value = 0
+        self.a.configured_gpio_outputs = [gpio]
+        api.py_aa_gpio_set.return_value = 0
+        self.a.gpio_set(gpio)
+        ret = self.a.gpio_get(gpio)
+        eq_(ret, True)
+
+    def test_gpio_get_input_low(self, api):
+        api.py_aa_gpio_change.return_value = 0
+        ret = self.a.gpio_get(GPIO_SCL)
+        eq_(ret, False)
+
+    def test_gpio_get_input_high(self, api):
+        gpio = GPIO_SDA
+        api.py_aa_gpio_change.return_value = GPIO_SDA
+        ret = self.a.gpio_get(gpio)
+        eq_(ret, True)
+
 if __name__ == '__main__':
     nose.main()

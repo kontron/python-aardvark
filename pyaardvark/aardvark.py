@@ -238,6 +238,7 @@ class Aardvark(object):
         self._i2c_slave_response = None
         self._configured_gpio_outputs = []
         self._high_gpio_outputs = []
+        self._enabled_gpio_pullups = []
 
     def __enter__(self):
         return self
@@ -641,6 +642,28 @@ class Aardvark(object):
         _raise_error_if_negative(ret)
         self._configured_gpio_outputs = used_outputs
 
+    @property
+    def enabled_gpio_pullups(self):
+        """GPIO pullup configuration.
+
+        To enable pull-up resitors, set this property to a list of `GPIO_*`
+        bitmasks.
+
+        Examples:
+            aardvark_instance.enabled_gpio_pullups = [GPIO_SCL]
+            aardvark_instance.enabled_gpio_pullups = [GPIO_MOSI, GPIO_MISO]
+        """
+        return self._enabled_gpio_pullups
+
+    @enabled_gpio_pullups.setter
+    def enabled_gpio_pullups(self, enabled_pullups):
+        bitmask = sum(enabled_pullups)
+        if bitmask == sum(self._enabled_gpio_pullups):
+            return
+        ret = api.py_aa_gpio_pullup(self.handle, bitmask)
+        _raise_error_if_negative(ret)
+        self._enabled_gpio_pullups = enabled_pullups
+
     def gpio_clear(self, output):
         """Drive a given GPIO output low."""
         if not output in self._high_gpio_outputs:
@@ -651,6 +674,33 @@ class Aardvark(object):
         ret = api.py_aa_gpio_set(self.handle, mask)
         _raise_error_if_negative(ret)
         self._high_gpio_outputs = new_list
+
+    def gpio_get(self, output):
+        """Read the state of a GPIO pin.
+
+        As the Aardvark library does not provide a way to read the state of a
+        GPIO output, the state of every output is cached and read out from
+        there.
+
+        This function returns `True` if the pin is currently high.
+        """
+        if output in self._configured_gpio_outputs:
+            return output in self._high_gpio_outputs
+        # Not an ouptut pin => poll inputs
+        return output in self.gpio_poll(32)
+
+    def gpio_poll(self, timeout):
+        """Blocks until a GPIO input change is detected.
+
+        You must specify a maximum time in [ms], after which the function will
+        return in case nothing changes.
+
+        In any case, a list of GPIO inputs that are currently high is returned.
+        """
+        bitmask = api.py_aa_gpio_change(self.handle, timeout)
+        _raise_error_if_negative(bitmask)
+        gpios = [GPIO_MISO, GPIO_MOSI, GPIO_SCK, GPIO_SCL, GPIO_SDA, GPIO_SS]
+        return [pin for pin in gpios if bitmask & pin != 0x00]
 
     def gpio_set(self, output):
         """Drive a given GPIO output high."""
