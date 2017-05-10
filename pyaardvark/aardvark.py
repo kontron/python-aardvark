@@ -453,7 +453,7 @@ class Aardvark(object):
     def i2c_slave_read(self):
         """Read the bytes from an I2C slave reception.
 
-        The bytes are returns as an string object.
+        The bytes are returned as a string object.
         """
         data = array.array('B', (0,) * self.BUFFER_SIZE)
         (ret, slave_addr) = api.py_aa_i2c_slave_read(self.handle, self.BUFFER_SIZE,
