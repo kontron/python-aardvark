@@ -1,4 +1,5 @@
 # Copyright (c) 2014-2015  Kontron Europe GmbH
+#               2017       CAMCO Produktions- und Vertriebs-GmbH
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -461,6 +462,16 @@ class Aardvark(object):
         _raise_error_if_negative(ret)
         del data[ret:]
         return (slave_addr, data.tostring())
+
+    def i2c_slave_set_response(self, data):
+        """Prepare response to next read command.
+
+        Args:
+            data:       an array of bytes to respond with
+        """
+        data = array.array('B', data)
+        ret = api.py_aa_i2c_slave_set_response(self.handle, len(data), data)
+        _raise_error_if_negative(ret)
 
     def enable_i2c_monitor(self):
         """Activate the I2C monitor.
