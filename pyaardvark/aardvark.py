@@ -473,6 +473,12 @@ class Aardvark(object):
         ret = api.py_aa_i2c_slave_set_response(self.handle, len(data), data)
         _raise_error_if_negative(ret)
 
+    def i2c_slave_write_stats(self):
+        """Returns the number of bytes transmitted by the slave."""
+        ret = api.py_aa_i2c_slave_write_stats(self.handle)
+        _raise_error_if_negative(ret)
+        return ret
+
     def enable_i2c_monitor(self):
         """Activate the I2C monitor.
 
