@@ -224,6 +224,9 @@ class Aardvark(object):
 
         _raise_error_if_negative(ret)
 
+        # Initialize shadow variables
+        self._i2c_slave_response = None
+
     def __enter__(self):
         return self
 
@@ -463,15 +466,26 @@ class Aardvark(object):
         del data[ret:]
         return (slave_addr, data.tostring())
 
-    def i2c_slave_set_response(self, data):
-        """Prepare response to next read command.
+    @property
+    def i2c_slave_response(self):
+        """Response to next read command.
 
-        Args:
-            data:       an array of bytes to respond with
+        An array of bytes that will be transmitted to the I2C master with the
+        next read operation.
+
+        Warning: Due to the fact that the Aardvark API does not provide a means
+        to read out this value, it is buffered when setting the property.
+        Reading the property therefore might not return what is actually stored
+        in the device.
         """
+        return self._i2c_slave_response
+
+    @i2c_slave_response.setter
+    def i2c_slave_response(self, data):
         data = array.array('B', data)
         ret = api.py_aa_i2c_slave_set_response(self.handle, len(data), data)
         _raise_error_if_negative(ret)
+        self._i2c_slave_response = data
 
     def i2c_slave_write_stats(self):
         """Returns the number of bytes transmitted by the slave."""
