@@ -396,6 +396,18 @@ class TestAardvark(object):
         data = range(4)
         self.a.i2c_slave_response = data
 
+    def test_last_transmit_size(self, api):
+        expected_result = 23
+        api.py_aa_i2c_slave_write_stats.return_value = expected_result
+        actual_result = self.a.i2c_slave_last_transmit_size
+        api.py_aa_i2c_slave_write_stats.assert_called_once_with(self.a.handle)
+        eq_(actual_result, expected_result)
+
+    @raises(IOError)
+    def test_last_transmit_size_error(self, api):
+        api.py_aa_i2c_slave_write_stats.return_value = -1
+        self.a.i2c_slave_last_transmit_size
+
     def test_enable_i2c_monitor(self, api):
         api.py_aa_i2c_monitor_enable.return_value = 0
         self.a.enable_i2c_monitor()
