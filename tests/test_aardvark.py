@@ -383,6 +383,19 @@ class TestAardvark(object):
         api.py_aa_i2c_slave_read.return_value = (-1, 0)
         self.a.i2c_slave_read()
 
+    def test_i2c_slave_set_response(self, api):
+        api.py_aa_i2c_slave_set_response.return_value = 0
+        data = range(4)
+        self.a.i2c_slave_response = data
+        api.py_aa_i2c_slave_set_response.assert_called_once_with(
+                self.a.handle, len(data), array.array('B', data))
+
+    @raises(IOError)
+    def test_i2c_slave_set_response_error(self, api):
+        api.py_aa_i2c_slave_set_response.return_value = -1
+        data = range(4)
+        self.a.i2c_slave_response = data
+
     def test_enable_i2c_monitor(self, api):
         api.py_aa_i2c_monitor_enable.return_value = 0
         self.a.enable_i2c_monitor()
