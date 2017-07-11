@@ -236,6 +236,8 @@ class Aardvark(object):
 
         # Initialize shadow variables
         self._i2c_slave_response = None
+        self._configured_gpio_outputs = []
+        self._high_gpio_outputs = []
 
     def __enter__(self):
         return self
@@ -616,3 +618,54 @@ class Aardvark(object):
         """
         ret = api.py_aa_spi_master_ss_polarity(self.handle, polarity)
         _raise_error_if_negative(ret)
+
+    @property
+    def configured_gpio_outputs(self):
+        """Configuration of GPIO pin directions.
+
+        To configure pins as outputs, set this property to a list of `GPIO_*`
+        bitmasks.
+
+        Examples:
+            aardvark_instance.configured_gpio_outputs = [GPIO_SDA]
+            aardvark_instance.configured_gpio_outputs = [GPIO_SS, GPIO_SCK]
+        """
+        return self._configured_gpio_outputs
+
+    @configured_gpio_outputs.setter
+    def configured_gpio_outputs(self, used_outputs):
+        bitmask = sum(used_outputs)
+        if bitmask == sum(self._configured_gpio_outputs):
+            return
+        ret = api.py_aa_gpio_direction(self.handle, bitmask)
+        _raise_error_if_negative(ret)
+        self._configured_gpio_outputs = used_outputs
+
+    def gpio_clear(self, output):
+        """Drive a given GPIO output low."""
+        if not output in self._high_gpio_outputs:
+            return
+        new_list = list(self._high_gpio_outputs)
+        new_list.remove(output)
+        mask = sum(new_list)
+        ret = api.py_aa_gpio_set(self.handle, mask)
+        _raise_error_if_negative(ret)
+        self._high_gpio_outputs = new_list
+
+    def gpio_set(self, output):
+        """Drive a given GPIO output high."""
+        if output in self._high_gpio_outputs:
+            return
+        new_list = list(self._high_gpio_outputs)
+        new_list.append(output)
+        mask = sum(new_list)
+        ret = api.py_aa_gpio_set(self.handle, mask)
+        _raise_error_if_negative(ret)
+        self._high_gpio_outputs = new_list
+
+    def gpio_toggle(self, output):
+        """Toggle a given GPIO output."""
+        if output in self._high_gpio_outputs:
+            self.gpio_clear(output)
+        else:
+            self.gpio_set(output)

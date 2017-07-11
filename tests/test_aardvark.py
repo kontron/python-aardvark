@@ -536,5 +536,86 @@ class TestAardvark(object):
         api.py_aa_spi_write.return_value = -1
         self.a.spi_write('')
 
+    def test_configured_gpio_ports_identical(self, api):
+        used_gpios = []
+        api.py_aa_gpio_direction.return_value = 0
+        self.a.configured_gpio_outputs = used_gpios
+        assert api.py_aa_gpio_direction.call_count == 0
+        eq_(self.a.configured_gpio_outputs, used_gpios)
+
+    def test_configured_gpio_ports_changed(self, api):
+        api.py_aa_gpio_direction.return_value = 0
+        used_gpios = [GPIO_SCK, GPIO_SCL]
+        self.a.configured_gpio_outputs = used_gpios
+        api.py_aa_gpio_direction.assert_called_once_with(self.a.handle, sum(used_gpios))
+        eq_(self.a.configured_gpio_outputs, used_gpios)
+
+    @raises(IOError)
+    def test_configured_gpio_ports_changed_error(self, api):
+        api.py_aa_gpio_direction.return_value = -1
+        self.a.configured_gpio_outputs = [GPIO_SDA, GPIO_SCL]
+
+    def test_gpio_clear(self, api):
+        api.py_aa_gpio_set.return_value = 0
+        self.a.gpio_clear(GPIO_SS)
+        assert api.py_aa_gpio_set.call_count == 0
+
+    def test_gpio_set_clear(self, api):
+        gpio = GPIO_SS
+        api.py_aa_gpio_set.return_value = 0
+        self.a.gpio_set(gpio)
+        self.a.gpio_clear(gpio)
+        api.py_aa_gpio_set.assert_has_calls([call(self.a.handle, gpio),
+                                             call(self.a.handle,    0)])
+
+    @raises(IOError)
+    def test_gpio_set_clear_error(self, api):
+        gpio = GPIO_SS
+        api.py_aa_gpio_set.return_value = 0
+        self.a.gpio_set(gpio)
+        api.py_aa_gpio_set.return_value = -1
+        self.a.gpio_clear(gpio)
+
+    @raises(IOError)
+    def test_gpio_set_error(self, api):
+        api.py_aa_gpio_set.return_value = -1
+        self.a.gpio_set(GPIO_SDA)
+
+    def test_gpio_set_set(self, api):
+        gpio = GPIO_MISO
+        api.py_aa_gpio_set.return_value = 0
+        self.a.gpio_set(gpio)
+        self.a.gpio_set(gpio)
+        api.py_aa_gpio_set.assert_called_once_with(self.a.handle, gpio)
+
+    def test_gpio_toggle_once(self, api):
+        gpio = GPIO_MOSI
+        api.py_aa_gpio_set.return_value = 0
+        self.a.gpio_toggle(gpio)
+        api.py_aa_gpio_set.assert_called_once_with(self.a.handle, gpio)
+
+    def test_gpio_toggle_twice(self, api):
+        gpio = GPIO_SCK
+        api.py_aa_gpio_set.return_value = 0
+        self.a.gpio_toggle(gpio)
+        self.a.gpio_toggle(gpio)
+        api.py_aa_gpio_set.assert_has_calls([call(self.a.handle, gpio),
+                                             call(self.a.handle,    0)])
+
+    def test_gpio_toggle_thrice(self, api):
+        gpio = GPIO_SCL
+        api.py_aa_gpio_set.return_value = 0
+        self.a.gpio_toggle(gpio)
+        self.a.gpio_toggle(gpio)
+        self.a.gpio_toggle(gpio)
+        api.py_aa_gpio_set.assert_has_calls([call(self.a.handle, gpio),
+                                             call(self.a.handle,    0),
+                                             call(self.a.handle, gpio)])
+
+    @raises(IOError)
+    def test_gpio_toggle_error(self, api):
+        api.py_aa_gpio_set.return_value = -1
+        self.a.gpio_toggle(GPIO_SCK)
+
 if __name__ == '__main__':
     nose.main()
