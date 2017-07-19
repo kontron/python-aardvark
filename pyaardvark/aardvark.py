@@ -63,19 +63,22 @@ def error_string(error_number):
         return 'ERR_UNKNOWN_ERROR'
 
 def _raise_error_if_negative(val):
+    """Raises an :class:`IOError` if `val` is negative."""
     if val < 0:
-        raise IOError(error_string(val))
+        raise IOError(val, error_string(val))
 
-def _raise_i2c_error(status_code):
-    """Wrapps an I2C status codes returned by the Aardvark API in an IOError
-    and raises it."""
-    description = 'Unkown I2C bus error'
-    i2c_errors = filter(lambda item: item[0].startswith('I2C_'),
-                        globals().items())
-    for name, value in i2c_errors:
-        if value == status_code:
-            description = 'I2C bus error: ' + name
-    raise IOError(description)
+def status_string(code):
+    for k, v in globals().items():
+        if k.startswith('I2C_STATUS_') and v == code:
+            return k
+    else:
+        return 'I2C_STATUS_UNKNOWN_STATUS'
+
+
+def _raise_i2c_status_code_error_if_failure(code):
+    """Raises an :class:`IOError` if `code` is not :data:`I2C_STATUS_OK`."""
+    if code != I2C_STATUS_OK:
+        raise IOError(code, status_string(code))
 
 def _unique_id_str(unique_id):
     id1 = unique_id / 1000000
@@ -385,9 +388,9 @@ class Aardvark(object):
         """
 
         data = array.array('B', data)
-        (status, _) = api.py_aa_i2c_write_ext(self.handle, i2c_address, flags, len(data), data)
-        if status:
-            _raise_i2c_error(status)
+        status, _ = api.py_aa_i2c_write_ext(self.handle, i2c_address, flags,
+                len(data), data)
+        _raise_i2c_status_code_error_if_failure(status)
 
     def i2c_master_read(self, addr, length, flags=I2C_NO_FLAGS):
         """Make an I2C read access.
@@ -401,9 +404,9 @@ class Aardvark(object):
         """
 
         data = array.array('B', (0,) * length)
-        (status, rx_len) = api.py_aa_i2c_read_ext(self.handle, addr, flags, length, data)
-        if status:
-            _raise_i2c_error(status)
+        status, rx_len = api.py_aa_i2c_read_ext(self.handle, addr, flags,
+                length, data)
+        _raise_i2c_status_code_error_if_failure(status)
         del data[rx_len:]
         return data.tostring()
 
@@ -471,9 +474,10 @@ class Aardvark(object):
         The bytes are returned as a string object.
         """
         data = array.array('B', (0,) * self.BUFFER_SIZE)
-        (status, addr, rx_len) = api.py_aa_i2c_slave_read_ext(self.handle, self.BUFFER_SIZE, data)
-        if status:
-            _raise_i2c_error(status)
+        status, addr, rx_len = api.py_aa_i2c_slave_read_ext(self.handle,
+                self.BUFFER_SIZE, data)
+        _raise_i2c_status_code_error_if_failure(status)
+
         # In case of general call, actually return the general call address
         if addr == 0x80:
             addr = 0x00
