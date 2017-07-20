@@ -339,6 +339,7 @@ class Aardvark(object):
         """
         ret = api.py_aa_i2c_pullup(self.handle, I2C_PULLUP_QUERY)
         _raise_error_if_negative(ret)
+        return ret
 
     @i2c_pullups.setter
     def i2c_pullups(self, value):
@@ -359,7 +360,7 @@ class Aardvark(object):
         """
         ret = api.py_aa_target_power(self.handle, TARGET_POWER_QUERY)
         _raise_error_if_negative(ret)
-
+        return ret
 
     @target_power.setter
     def target_power(self, value):
