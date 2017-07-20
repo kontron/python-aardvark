@@ -254,6 +254,20 @@ class TestAardvark(object):
         api.py_aa_target_power.return_value = -1
         self.a.target_power = 0
 
+    def test_i2c_bus_timeout(self, api):
+        api.py_aa_i2c_bus_timeout.return_value = 10
+        self.a.i2c_bus_timeout = 300
+        eq_(self.a.i2c_bus_timeout, 10)
+
+        api.py_aa_i2c_bus_timeout.assert_has_calls([
+                call(self.a.handle, 300),
+                call(self.a.handle, 0),
+        ])
+
+    @raises(IOError)
+    def test_i2c_bitrate_error(self, api):
+        api.py_aa_i2c_bitrate.return_value = -1
+        self.a.i2c_bitrate = 0
     def test_i2c_master_write(self, api):
         addr = 0x50
         data = b'\x01\x02\x03'
