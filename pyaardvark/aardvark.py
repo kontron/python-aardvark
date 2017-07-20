@@ -55,17 +55,10 @@ if not api:
 
 log = logging.getLogger(__name__)
 
-def error_string(error_number):
-    for k, v in globals().items():
-        if k.startswith('ERR_') and v == error_number:
-            return k
-    else:
-        return 'ERR_UNKNOWN_ERROR'
-
 def _raise_error_if_negative(val):
     """Raises an :class:`IOError` if `val` is negative."""
     if val < 0:
-        raise IOError(val, error_string(val))
+        raise IOError(val, api.py_aa_status_string(val))
 
 def status_string(code):
     for k, v in globals().items():
@@ -171,14 +164,14 @@ def open(port=None, serial_number=None):
             if d['serial_number'] == serial_number:
                 break
         else:
-            raise IOError(error_string(ERR_UNABLE_TO_OPEN))
+            _raise_error_if_negative(ERR_UNABLE_TO_OPEN)
 
         dev = Aardvark(d['port'])
 
         # make sure we opened the correct device
         if dev.unique_id_str() != serial_number:
             dev.close()
-            raise IOError(error_string(ERR_UNABLE_TO_OPEN))
+            _raise_error_if_negative(ERR_UNABLE_TO_OPEN)
     else:
         dev = Aardvark(port)
 

@@ -8,12 +8,6 @@ from pyaardvark.constants import *
 from nose.tools import eq_, raises, assert_raises
 
 
-def test_error_string():
-    eq_(pyaardvark.aardvark.error_string(-1), 'ERR_UNABLE_TO_LOAD_LIBRARY')
-
-def test_error_string_invalid_num():
-    eq_(pyaardvark.aardvark.error_string(1), 'ERR_UNKNOWN_ERROR')
-
 @patch('pyaardvark.aardvark.api', autospec=True)
 def test_open_default(api):
     api.py_aa_open_ext.return_value = (42, (0,) * 6)
