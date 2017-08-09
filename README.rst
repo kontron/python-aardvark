@@ -19,11 +19,11 @@ Instead, this binding tries to be more pythonic.
 Features
 --------
 
-* simple interface
+* simple, pythonic interface
 * CLI tool for easy testing
 * |I2C| and SPI support
+* GPIO support
 * support for control signals like target power and internal |I2C| pullups
-* rudimental |I2C| slave support
 * Support for Linux, Windows and OSX
 
 
@@ -31,7 +31,6 @@ Features
 ------------------------
 
 * more documentation (please bear with me)
-* GPIO support
 
 
 Documentation
@@ -61,6 +60,7 @@ If you are doing code changes or additions please:
 * provide well-formed commit message (see `this blog post
   <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_.)
 * add a Signed-off-by line (eg. ``git commit -s``)
+* test your commits (``pip2 install nose 'mock<=1.0.1' && nosetests``)
 
 
 License
