@@ -78,6 +78,17 @@ def _unique_id_str(unique_id):
     id2 = unique_id % 1000000
     return '%04d-%06d' % (id1, id2)
 
+def _to_version_str(v):
+    return '%d.%02d' % (v >> 8, v & 0xff)
+
+def api_version():
+    """Returns the underlying C module (aardvark.so, aardvark.pyd) as a string.
+
+    It returns the same value as :attr:`Aardvark.api_version` but you don't
+    need to open a device.
+    """
+    return _to_version_str(api.py_version() & 0xffff)
+
 def find_devices():
     """Return a list of dictionaries. Each dictionary represents one device.
 
@@ -199,34 +210,32 @@ class Aardvark(object):
             api_req_by_sw = ver[5],
         )
 
-        to_version_str = lambda v: '%d.%02d' % (v >> 8, v & 0xff)
-
         #: Hardware revision of the host adapter as a string. The format is
         #: ``M.NN`` where `M` is the major number and `NN` the zero padded
         #: minor number.
-        self.hardware_revision = to_version_str(version['hardware'])
+        self.hardware_revision = _to_version_str(version['hardware'])
 
         #: Firmware version of the host adapter as a string. See
         #: :attr:`hardware_revision` for more information on the format.
-        self.firmware_version = to_version_str(version['firmware'])
+        self.firmware_version = _to_version_str(version['firmware'])
 
-        #: Version of underlying C module (aardvark.so, aardvark.dll) as a
+        #: Version of underlying C module (aardvark.so, aardvark.pyd) as a
         #: string. See :attr:`hardware_revision` for more information on the
         #: format.
-        self.api_version = to_version_str(version['software'])
+        self.api_version = _to_version_str(version['software'])
 
         # version checks
         if version['firmware'] < version['fw_req_by_sw']:
             log.debug('The API requires a firmware version >= %s, but the '
                     'device has version %s',
-                    to_version_str(version['fw_req_by_sw']),
-                    to_version_str(version['firmware']))
+                    _to_version_str(version['fw_req_by_sw']),
+                    _to_version_str(version['firmware']))
             ret = ERR_INCOMPATIBLE_DEVICE
         elif version['software'] < version['sw_req_by_fw']:
             log.debug('The firmware requires an API version >= %s, but the '
                     'API has version %s',
-                    to_version_str(version['sw_req_by_fw']),
-                    to_version_str(version['software']))
+                    _to_version_str(version['sw_req_by_fw']),
+                    _to_version_str(version['software']))
             ret = ERR_INCOMPATIBLE_LIBRARY
 
         _raise_error_if_negative(ret)

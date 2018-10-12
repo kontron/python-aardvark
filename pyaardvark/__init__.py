@@ -19,5 +19,5 @@ try:
 except ImportError:
     __version__ = 'dev'
 
-from .aardvark import find_devices, open, Aardvark
+from .aardvark import api_version, find_devices, open, Aardvark
 from .constants import *

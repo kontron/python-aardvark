@@ -4,7 +4,7 @@ API
 Module Interface
 ----------------
 .. automodule:: pyaardvark
-   :members: find_devices, open
+   :members: api_version, find_devices, open
 
 Constants
 ---------

@@ -9,6 +9,13 @@ from nose.tools import eq_, raises, assert_raises
 
 
 @patch('pyaardvark.aardvark.api', autospec=True)
+def test_api_version(api):
+    api.py_version.return_value = 83887390
+    v = pyaardvark.api_version()
+    api.py_version.assert_called_once_with()
+    eq_(v, "5.30")
+
+@patch('pyaardvark.aardvark.api', autospec=True)
 def test_open_default(api):
     api.py_aa_open_ext.return_value = (42, (0,) * 6)
     a = pyaardvark.open()
