@@ -286,14 +286,14 @@ class TestAardvark(object):
 
     def test_i2c_master_write_default_flags(self, api):
         api.py_aa_i2c_write_ext.return_value = (I2C_STATUS_OK, 0)
-        self.a.i2c_master_write(0, '')
+        self.a.i2c_master_write(0, b'')
         api.py_aa_i2c_write_ext.assert_called_once_with(
                 ANY, ANY, pyaardvark.I2C_NO_FLAGS, ANY, ANY)
 
     @raises(IOError)
     def test_i2c_master_write_error(self, api):
         api.py_aa_i2c_write_ext.return_value = (I2C_STATUS_BUS_ERROR, 0)
-        self.a.i2c_master_write(0, '')
+        self.a.i2c_master_write(0, b'')
 
     def test_i2c_master_read(self, api):
         def i2c_master_read(_handle, _addr, _flags, length, data):
@@ -348,13 +348,13 @@ class TestAardvark(object):
     def test_i2c_master_write_read_error_read(self, api):
         api.py_aa_i2c_write_ext.return_value = (I2C_STATUS_OK, 1)
         api.py_aa_i2c_read_ext.return_value = (I2C_STATUS_BUS_ERROR, -1)
-        self.a.i2c_master_write_read(0, '', 0)
+        self.a.i2c_master_write_read(0, b'', 0)
 
     @raises(IOError)
     def test_i2c_master_write_read_error_write(self, api):
         api.py_aa_i2c_write_ext.return_value = (I2C_STATUS_BUS_ERROR, -1)
         api.py_aa_i2c_read_ext.return_value = (I2C_STATUS_OK, 1)
-        self.a.i2c_master_write_read(0, '', 0)
+        self.a.i2c_master_write_read(0, b'', 0)
 
     def test_enable_i2c_slave(self, api):
         api.py_aa_i2c_slave_enable.return_value = 0
@@ -532,7 +532,7 @@ class TestAardvark(object):
     @raises(IOError)
     def test_spi_spi_write_error(self, api):
         api.py_aa_spi_write.return_value = -1
-        self.a.spi_write('')
+        self.a.spi_write(b'')
 
 if __name__ == '__main__':
     nose.main()
