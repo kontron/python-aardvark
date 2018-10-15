@@ -160,6 +160,11 @@ def main(args=None):
 
     args = parser.parse_args(args)
 
+    # python 3 compatibilty workaround (https://bugs.python.org/issue9253)
+    if not hasattr(args, 'func'):
+        parser.print_usage()
+        return 1
+
     logging.basicConfig()
     if args.verbose:
         logging.getLogger('pyaardvark').setLevel(logging.DEBUG)
