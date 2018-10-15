@@ -139,7 +139,7 @@ class TestAardvark(object):
     def test_context_manager(self, api):
         api.py_aa_open_ext.return_value = (1, (0,) * 6)
         with pyaardvark.open() as a:
-            eq_(self.a.handle, api.py_aa_open_ext.return_value[0])
+            eq_(a.handle, api.py_aa_open_ext.return_value[0])
             api.py_aa_open_ext.assert_called_once_with(0)
         api.py_aa_close.assert_called_once_with(
                 api.py_aa_open_ext.return_value[0])
@@ -243,13 +243,13 @@ class TestAardvark(object):
     @raises(IOError)
     def test_i2c_pullups_error(self, api):
         api.py_aa_i2c_pullup.return_value = -1
-        pullup = self.a.i2c_pullups
+        _ = self.a.i2c_pullups
 
     def test_enable_target_power(self, api):
         api.py_aa_target_power.return_value = 0
         self.a.target_power = False
         self.a.target_power = True
-        power = self.a.target_power
+        _ = self.a.target_power
         api.py_aa_target_power.assert_has_calls([
             call(self.a.handle, pyaardvark.TARGET_POWER_NONE),
             call(self.a.handle, pyaardvark.TARGET_POWER_BOTH),
@@ -271,10 +271,6 @@ class TestAardvark(object):
                 call(self.a.handle, 0),
         ])
 
-    @raises(IOError)
-    def test_i2c_bitrate_error(self, api):
-        api.py_aa_i2c_bitrate.return_value = -1
-        self.a.i2c_bitrate = 0
     def test_i2c_master_write(self, api):
         addr = 0x50
         data = b'\x01\x02\x03'
@@ -312,7 +308,7 @@ class TestAardvark(object):
 
     def test_i2c_master_read_default_flags(self, api):
         api.py_aa_i2c_read_ext.return_value = (I2C_STATUS_OK, 1)
-        data = self.a.i2c_master_read(0, 0)
+        _ = self.a.i2c_master_read(0, 0)
         api.py_aa_i2c_read_ext.assert_called_once_with(
                 ANY, ANY, pyaardvark.I2C_NO_FLAGS, ANY, ANY)
 
@@ -421,7 +417,7 @@ class TestAardvark(object):
     @raises(IOError)
     def test_last_transmit_size_error(self, api):
         api.py_aa_i2c_slave_write_stats.return_value = -1
-        self.a.i2c_slave_last_transmit_size
+        _ = self.a.i2c_slave_last_transmit_size
 
     def test_enable_i2c_monitor(self, api):
         api.py_aa_i2c_monitor_enable.return_value = 0

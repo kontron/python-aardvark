@@ -16,7 +16,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 from builtins import bytes
-import time
 import array
 import logging
 import sys
@@ -29,7 +28,7 @@ if sys.platform.startswith('linux'):
     except ImportError:
         try:
             from .ext.linux64 import aardvark as api
-        except:
+        except ImportError:
             api = None
 elif sys.platform.startswith('win32'):
     try:
@@ -37,7 +36,7 @@ elif sys.platform.startswith('win32'):
     except ImportError:
         try:
             from .ext.win64 import aardvark as api
-        except:
+        except ImportError:
             api = None
 elif sys.platform.startswith('darwin'):
     try:
@@ -45,7 +44,7 @@ elif sys.platform.startswith('darwin'):
     except ImportError:
         try:
             from .ext.osx64 import aardvark as api
-        except:
+        except ImportError:
             api = None
 else:
     api = None
@@ -65,8 +64,7 @@ def status_string(code):
     for k, v in globals().items():
         if k.startswith('I2C_STATUS_') and v == code:
             return k
-    else:
-        return 'I2C_STATUS_UNKNOWN_STATUS'
+    return 'I2C_STATUS_UNKNOWN_STATUS'
 
 
 def _raise_i2c_status_code_error_if_failure(code):
@@ -114,6 +112,7 @@ def find_devices():
     # first fetch the number of attached devices, so we can create a buffer
     # with the exact amount of entries. api expects array of u16
     num_devices = api.py_aa_find_devices(0, array.array('H'))
+    _raise_error_if_negative(num_devices)
 
     # return an empty list if no device is connected
     if num_devices == 0:
@@ -123,7 +122,9 @@ def find_devices():
     unique_ids = array.array('I', (0,) * num_devices)
     num_devices = api.py_aa_find_devices_ext(len(ports), len(unique_ids),
             ports, unique_ids)
-    assert num_devices > 0
+    _raise_error_if_negative(num_devices)
+    if num_devices == 0:
+        return list()
 
     del ports[num_devices:]
     del unique_ids[num_devices:]
