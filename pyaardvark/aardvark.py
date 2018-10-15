@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2015  Kontron Europe GmbH
+# Copyright (c) 2014-2018  Kontron Europe GmbH
 #               2017       CAMCO Produktions- und Vertriebs-GmbH
 #
 # This library is free software; you can redistribute it and/or
@@ -15,6 +15,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
+from builtins import bytes
 import time
 import array
 import logging
@@ -430,7 +431,7 @@ class Aardvark(object):
                 length, data)
         _raise_i2c_status_code_error_if_failure(status)
         del data[rx_len:]
-        return data.tostring()
+        return bytes(data)
 
     def i2c_master_write_read(self, i2c_address, data, length):
         """Make an I2C write/read access.
@@ -504,7 +505,7 @@ class Aardvark(object):
         if addr == 0x80:
             addr = 0x00
         del data[rx_len:]
-        return (addr, data.tostring())
+        return (addr, bytes(data))
 
     @property
     def i2c_slave_response(self):
@@ -613,7 +614,7 @@ class Aardvark(object):
         ret = api.py_aa_spi_write(self.handle, len(data_out), data_out,
                 len(data_in), data_in)
         _raise_error_if_negative(ret)
-        return data_in.tostring()
+        return bytes(data_in)
 
     def spi_ss_polarity(self, polarity):
         """Change the ouput polarity on the SS line.

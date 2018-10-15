@@ -17,7 +17,7 @@ first five bytes of its content::
 
   a = pyaardvark.open()
   data = a.i2c_master_write_read(0x50, '\x00', 5)
-  # data = '\x00\x01\x02\x03\x04'
+  # data = b'\x00\x01\x02\x03\x04'
   a.close()
 
 Easy, huh?
@@ -83,7 +83,7 @@ be GPIOs or the actual interface. So if, for example you want to use both
 
 After you enabled the |I2C| interface you can issue transactions on the bus::
 
-  a.i2c_master_write(0x50, '\x00\x02\0x00\x00')
+  a.i2c_master_write(0x50, b'\x00\x02\0x00\x00')
 
 This will write adress device `0x50` and sends the byte sequence `0x00`,
 `0x02`, `0x00`, `0x00` to it. To read from a device use
@@ -102,12 +102,24 @@ Releasing the device can be done with :meth:`pyaardvark.Aardvark.close`::
 FAQ
 ---
 
-Convert data to a string
-~~~~~~~~~~~~~~~~~~~~~~~~
+On pyaardvark datatypes
+~~~~~~~~~~~~~~~~~~~~~~~
 
-Most parameters of the pyaardvark API take (byte) strings (eg.
-:meth:`pyaardvark.Aardvark.i2c_master_write_read` etc). You can convert
-iterables to strings using the built-in chr function::
+Most parameters of the API take bytes (eg.
+:meth:`pyaardvark.Aardvark.i2c_master_write_read`). Former versions of
+:mod:`pyaardvark` used strings, which where handled differently in Python 2
+and Python 3. For this reason, :mod:`pyaardvark` now uses the bytes object
+to encapsulate data. For Python 2 compatibility, the bytes backport is used
+(:class:`newbytes`). This simplifies the data handling because you don't
+have to explicitly convert the individual characters of the string to
+integers (using :func:`ord`) anymore.
+
+.. warning::
+
+  Therefore the following is only valid for older :mod:`pyaardvark`
+  versions (=< 0.5).
+
+Iterables to strings using the built-in chr function::
 
   data = (0x01, 0xaf, 0xff)
   data = ''.join(chr(c) for c in data) # data is '\x01\xaf\xff'

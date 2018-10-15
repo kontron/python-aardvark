@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2014  Kontron Europe GmbH
+# Copyright (c) 2014-2018  Kontron Europe GmbH
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -37,6 +37,9 @@ def byte(value):
         raise argparse.ArgumentTypeError(msg)
     return value
 
+def print_hex(data):
+    print(' '.join('%02x' % c for c in data))
+
 def _i2c_common(a, args):
     a.enable_i2c = True
     a.i2c_pullups = args.enable_i2c_pullups
@@ -44,27 +47,24 @@ def _i2c_common(a, args):
 
 def i2c_wr(a, args):
     _i2c_common(a, args)
-    data = ''.join('%c' % c for c in args.data)
-    a.i2c_master_write(args.i2c_address, data)
+    a.i2c_master_write(args.i2c_address, args.data)
 
 def i2c_wrrd(a, args):
     _i2c_common(a, args)
-    data = ''.join('%c' % c for c in args.data)
-    data = a.i2c_master_write_read(args.i2c_address, data, args.num_bytes)
-    print(' '.join('%02x' % ord(c) for c in data))
+    data = a.i2c_master_write_read(args.i2c_address, args.data, args.num_bytes)
+    print_hex(data)
 
 def i2c_rd(a, args):
     _i2c_common(a, args)
     data = a.i2c_master_read(args.i2c_address, args.num_bytes)
-    print(' '.join('%02x' % ord(c) for c in data))
+    print_hex(data)
 
 def spi(a, args):
     a.enable_spi = True
     a.spi_configure_mode(pyaardvark.SPI_MODE_3)
     a.spi_bitrate = args.bitrate
-    data = ''.join('%c' % c for c in args.data)
-    data = a.spi_write(data)
-    print(' '.join('%02x' % ord(c) for c in data))
+    data = a.spi_write(args.data)
+    print_hex(data)
 
 def scan(a, args):
     for dev in pyaardvark.find_devices():
