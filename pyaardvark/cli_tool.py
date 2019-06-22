@@ -59,26 +59,36 @@ def i2c_rd(a, args):
     data = a.i2c_master_read(args.i2c_address, args.num_bytes)
     print_hex(data)
 
+
+def i2c_slave_str(a, addr):
+    first = 0x08
+    last  = 0x77
+
+    if not addr in range(first, last+1):
+        return ''
+
+    found = ' --'
+    try:
+        a.i2c_master_read(addr, 1)
+        found = '{:>3x}'.format(addr)
+    except:
+        pass
+
+    return found
+
+
 def i2c_scan(a, args):
     _i2c_common(a, args)
-    first = 3
-    last = 0x77
-    print('     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f')
-    for i in range(0, 128, 16):
-        print("%02x: " % i, end='')
-        for j in range(0, 16):
-            addr = i + j
-            if addr < first or addr > last:
-                print('   ', end='')
-                continue
 
-            try:
-                a.i2c_master_read(addr, 1)
-                print('%02x ' % addr, end='')
-            except:
-                print('-- ', end='')
+    slaves = map(lambda x: i2c_slave_str(a, x), range(128))
 
-        print()
+    hdr_fmt = '    ' + '{:>3x}' * 16
+    print(hdr_fmt.format(*range(16)))
+
+    row_fmt = '{:>02x}: ' + '{:>3}' * 16
+    for k in range(0,128,16):
+        print(row_fmt.format(k, *slaves[k:k+16]))
+
 
 def spi(a, args):
     a.enable_spi = True
