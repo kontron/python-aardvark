@@ -70,14 +70,12 @@ def i2c_scan(a, args):
             addr = i + j
             if addr < first or addr > last:
                 print('   ', end='')
-                continue
-
-            try:
-                a.i2c_master_read(addr, 1)
-                print('%02x ' % addr, end='')
-            except:
-                print('-- ', end='')
-
+            else:
+                try:
+                    a.i2c_master_read(addr, 1)
+                    print('%02x ' % addr, end='')
+                except:
+                    print('-- ', end='')
         print()
 
 def spi(a, args):
