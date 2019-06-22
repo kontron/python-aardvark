@@ -59,6 +59,27 @@ def i2c_rd(a, args):
     data = a.i2c_master_read(args.i2c_address, args.num_bytes)
     print_hex(data)
 
+def i2c_scan(a, args):
+    _i2c_common(a, args)
+    first = 3
+    last = 0x77
+    print('     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f')
+    for i in range(0, 128, 16):
+        print("%02x: " % i, end='')
+        for j in range(0, 16):
+            addr = i + j
+            if addr < first or addr > last:
+                print('   ', end='')
+                continue
+
+            try:
+                a.i2c_master_read(addr, 1)
+                print('%02x ' % addr, end='')
+            except:
+                print('-- ', end='')
+
+        print()
+
 def spi(a, args):
     a.enable_spi = True
     a.spi_configure_mode(pyaardvark.SPI_MODE_3)
@@ -146,6 +167,10 @@ def main(args=None):
     subparser.add_argument('num_bytes', type=int_base0, metavar="NUM_BYTES",
             help='number of bytes to read')
     subparser.set_defaults(func=i2c_rd)
+
+    # i2c scan
+    subparser = _sub_i2c.add_parser('scan', help='scan I2C bus for slaves')
+    subparser.set_defaults(func=i2c_scan)
 
     # i2c wrrd
     subparser = _sub_i2c.add_parser('wrrd',
