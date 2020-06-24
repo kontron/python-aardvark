@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 # Copyright (c) 2014-2018  Kontron Europe GmbH
 #
@@ -65,7 +65,7 @@ def i2c_slave_str(a, addr):
     last  = 0x77
 
     if not addr in range(first, last+1):
-        return ''
+        return ' '
 
     found = ' --'
     try:
@@ -80,14 +80,14 @@ def i2c_slave_str(a, addr):
 def i2c_scan(a, args):
     _i2c_common(a, args)
 
-    slaves = map(lambda x: i2c_slave_str(a, x), range(128))
-
     hdr_fmt = '    ' + '{:>3x}' * 16
     print(hdr_fmt.format(*range(16)))
 
     row_fmt = '{:>02x}: ' + '{:>3}' * 16
+
     for k in range(0,128,16):
-        print(row_fmt.format(k, *slaves[k:k+16]))
+        slaves = list(map(lambda x: i2c_slave_str(a, x), range(k, k+16)))
+        print(row_fmt.format(k, *slaves))
 
 
 def spi(a, args):
