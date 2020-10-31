@@ -1,7 +1,7 @@
 Python binding for Total Phase Aardvark
 =======================================
 
-|BuildStatus| |PyPiVersion|
+|BuildStatus| |PyPiVersion| |PyPiPythonVersions|
 
 The `Total Phase`_ Aardvark is an USB |I2C|/SPI host adapter.
 
@@ -86,3 +86,6 @@ Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
                  :target: https://travis-ci.org/kontron/python-aardvark
 .. |PyPiVersion| image:: https://badge.fury.io/py/pyaardvark.svg
                  :target: http://badge.fury.io/py/pyaardvark
+.. |PyPiPythonVersions| image:: https://img.shields.io/pypi/pyversions/pyaardvark.svg
+                        :alt: Python versions
+                        :target: http://badge.fury.io/py/pyaardvark
