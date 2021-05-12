@@ -40,12 +40,9 @@ elif sys.platform.startswith('win32'):
             api = None
 elif sys.platform.startswith('darwin'):
     try:
-        from .ext.osx32 import aardvark as api
+        from .ext.osx64 import aardvark as api
     except ImportError:
-        try:
-            from .ext.osx64 import aardvark as api
-        except ImportError:
-            api = None
+        api = None
 else:
     api = None
 
