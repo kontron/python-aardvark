@@ -351,7 +351,22 @@ class TestAardvark(object):
         api.py_aa_i2c_write_ext.return_value = (I2C_STATUS_BUS_ERROR, -1)
         api.py_aa_i2c_read_ext.return_value = (I2C_STATUS_OK, 1)
         self.a.i2c_master_write_read(0, b'', 0)
-
+    
+    def test_i2c_stop(self, api):
+        api.py_aa_i2c_free_bus.return_value = 0
+        self.a.i2c_stop()
+        api.py_aa_i2c_free_bus.assert_called_once_with(self.a.handle)
+        
+    def test_i2c_stop_ignore_error(self, api):
+        api.py_aa_i2c_free_bus.return_value = -1
+        self.a.i2c_stop(ignore_errors=True)
+        api.py_aa_i2c_free_bus.assert_called_once_with(self.a.handle)
+        
+    @raises(IOError)
+    def test_i2c_stop_error(self, api):
+        api.py_aa_i2c_free_bus.return_value = -1
+        self.a.i2c_stop(ignore_errors=False)
+        
     def test_enable_i2c_slave(self, api):
         api.py_aa_i2c_slave_enable.return_value = 0
         addr = 0x50
