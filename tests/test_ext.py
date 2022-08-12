@@ -5,7 +5,7 @@ import pyaardvark
 from nose.tools import eq_
 
 def test_api_version():
-    eq_(pyaardvark.api_version(), '5.50')
+    eq_(pyaardvark.api_version(), '5.60')
 
 if __name__ == '__main__':
     nose.main()

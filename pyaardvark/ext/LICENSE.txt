@@ -1,7 +1,7 @@
                           LICENSE AGREEMENT
 
                Aardvark I2C/SPI Software and Firmware
-              Copyright (c) 2003-2014 Total Phase, Inc.
+              Copyright (c) 2003-2022 Total Phase, Inc.
                         All rights reserved.
 
 
@@ -108,13 +108,6 @@ SAFETY-CRITICAL SYSTEMS POLICY:
   employees, affiliates, and distributors from any and all claims
   arising from such use, even if such claim alleges that Total Phase
   was negligent in the design or manufacture of the Product.
-
-
-OPEN SOURCE:
-  The software API portion of the Product makes use of open source
-  libraries that are not owned by Total Phase and are licensed under
-  different terms.  For specific details, please see the documentation
-  that is included with the software API package.
 
 
 DISCLAIMER:
