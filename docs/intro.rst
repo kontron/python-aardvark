@@ -5,7 +5,7 @@ Introduction
 ============
 
 The :mod:`pyaardvark` module tries to provide a very simple API to use the
-`Total Phase`_ Aardvark |I2C|/SPI Host adatper within your python program.
+`Total Phase`_ Aardvark |I2C|/SPI Host adapter within your python program.
 
 Simple Example
 --------------
@@ -85,7 +85,7 @@ After you enabled the |I2C| interface you can issue transactions on the bus::
 
   a.i2c_master_write(0x50, b'\x00\x02\0x00\x00')
 
-This will write adress device `0x50` and sends the byte sequence `0x00`,
+This will write address device `0x50` and sends the byte sequence `0x00`,
 `0x02`, `0x00`, `0x00` to it. To read from a device use
 :meth:`pyaardvark.Aardvark.i2c_master_read`. Eventually, both can be combined
 and issued in one transaction:
