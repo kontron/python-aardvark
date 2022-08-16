@@ -447,6 +447,16 @@ class Aardvark(object):
         self.i2c_master_write(i2c_address, data, I2C_NO_STOP)
         return self.i2c_master_read(i2c_address, length)
 
+    def i2c_stop(self, ignore_errors=True):
+        """Free the Aardvark I2C subsystem from a held bus condition.
+
+        Raises ERR_I2C_BUS_ALREADY_FREE if I2C bus was already free.
+        """
+        ret = api.py_aa_i2c_free_bus(self.handle)
+        if not ignore_errors:
+            _raise_error_if_negative(ret)
+        return ret
+
     def poll(self, timeout=None):
         """Wait for an event to occur.
 
