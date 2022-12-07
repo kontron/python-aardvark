@@ -62,7 +62,6 @@ setup(name = name,
                 'aardvark = pyaardvark.cli_tool:main',
             ]
         },
-        test_suite = 'tests',
         include_package_data = True,
         install_requires = ['future'],
 )
