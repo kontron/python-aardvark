@@ -48,6 +48,11 @@ You need an either an x86, an amd64 or a M1 machine. This is because the
 binding uses a binary-only module supplied by the manufacturer, Total
 Phase. Linux, Windows, and OSX are supported.
 
+Python 2.7 support
+``````````````````
+
+The last version with python 2.7 support is 0.7.1.
+
 
 Contributing
 ------------
