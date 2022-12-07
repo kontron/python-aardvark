@@ -42,7 +42,10 @@ elif sys.platform.startswith('darwin'):
     try:
         from .ext.osx64 import aardvark as api
     except ImportError:
-        api = None
+        try:
+            from .ext.osxarm import aardvark as api
+        except ImportError:
+            api = None
 else:
     api = None
 
