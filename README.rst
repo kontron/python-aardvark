@@ -44,9 +44,9 @@ http://pyaardvark.rtfd.org
 Requirements
 ------------
 
-You need an either a x86 or an amd64 machine. This is because the binding
-uses a binary-only module supplied by the manufacturer, Total Phase.
-Linux, Windows, and OSX is supported.
+You need an either an x86, an amd64 or a M1 machine. This is because the
+binding uses a binary-only module supplied by the manufacturer, Total
+Phase. Linux, Windows, and OSX are supported.
 
 
 Contributing
