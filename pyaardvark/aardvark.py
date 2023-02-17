@@ -29,7 +29,10 @@ if sys.platform.startswith('linux'):
         try:
             from .ext.linux64 import aardvark as api
         except ImportError:
-            api = None
+            try:
+                from: ext.linuxarm import aardvark as api
+            except ImportError:
+                api = None
 elif sys.platform.startswith('win32'):
     try:
         from .ext.win32 import aardvark as api
