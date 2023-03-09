@@ -31,7 +31,7 @@ except (OSError, subprocess.CalledProcessError, IOError) as e:
     except IOError:
         version = 'unknown'
 
-with open('README.rst') as f:
+with open('README.md') as f:
     readme = f.read()
 
 setup(name = name,
