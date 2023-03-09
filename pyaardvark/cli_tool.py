@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 # Copyright (c) 2014-2018  Kontron Europe GmbH
 #
@@ -58,6 +58,37 @@ def i2c_rd(a, args):
     _i2c_common(a, args)
     data = a.i2c_master_read(args.i2c_address, args.num_bytes)
     print_hex(data)
+
+
+def i2c_slave_str(a, addr):
+    first = 0x08
+    last  = 0x77
+
+    if not addr in range(first, last+1):
+        return ' '
+
+    found = ' --'
+    try:
+        a.i2c_master_read(addr, 1)
+        found = '{:>3x}'.format(addr)
+    except:
+        pass
+
+    return found
+
+
+def i2c_scan(a, args):
+    _i2c_common(a, args)
+
+    hdr_fmt = '    ' + '{:>3x}' * 16
+    print(hdr_fmt.format(*range(16)))
+
+    row_fmt = '{:>02x}: ' + '{:>3}' * 16
+
+    for k in range(0,128,16):
+        slaves = list(map(lambda x: i2c_slave_str(a, x), range(k, k+16)))
+        print(row_fmt.format(k, *slaves))
+
 
 def spi(a, args):
     a.enable_spi = True
@@ -146,6 +177,10 @@ def main(args=None):
     subparser.add_argument('num_bytes', type=int_base0, metavar="NUM_BYTES",
             help='number of bytes to read')
     subparser.set_defaults(func=i2c_rd)
+
+    # i2c scan
+    subparser = _sub_i2c.add_parser('scan', help='scan I2C bus for slaves')
+    subparser.set_defaults(func=i2c_scan)
 
     # i2c wrrd
     subparser = _sub_i2c.add_parser('wrrd',
