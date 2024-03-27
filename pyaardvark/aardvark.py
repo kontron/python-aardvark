@@ -18,40 +18,10 @@
 from builtins import bytes
 import array
 import logging
-import sys
 
 from .constants import *
-
-if sys.platform.startswith('linux'):
-    try:
-        from .ext.linux32 import aardvark as api
-    except ImportError:
-        try:
-            from .ext.linux64 import aardvark as api
-        except ImportError:
-            api = None
-elif sys.platform.startswith('win32'):
-    try:
-        from .ext.win32 import aardvark as api
-    except ImportError:
-        try:
-            from .ext.win64 import aardvark as api
-        except ImportError:
-            api = None
-elif sys.platform.startswith('darwin'):
-    try:
-        from .ext.osx64 import aardvark as api
-    except ImportError:
-        try:
-            from .ext.osxarm import aardvark as api
-        except ImportError:
-            api = None
-else:
-    api = None
-
-if not api:
-    raise RuntimeError('Unable to find suitable binary interface. '
-            'Unsupported platform?')
+from .constants import *
+from .ext import api
 
 log = logging.getLogger(__name__)
 
