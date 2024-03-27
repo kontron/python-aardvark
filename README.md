@@ -37,9 +37,9 @@ You can find the most up to date documentation at:
 
 ## Requirements
 
-You need an either an x86, an amd64 or a M1 machine. This is because the
-binding uses a binary-only module supplied by the manufacturer, Total
-Phase. Linux, Windows, and OSX are supported.
+You need an either an x86, an amd64, an aarch64, an arm32 or a M1 machine. This
+is because the binding uses a binary-only module supplied by the manufacturer,
+Total Phase. Linux, Windows, and OSX are supported.
 
 ### Python 2.7 support
 

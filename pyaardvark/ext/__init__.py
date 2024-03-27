@@ -7,7 +7,13 @@ if sys.platform.startswith('linux'):
         try:
             from .linux64 import aardvark as api
         except ImportError:
-            api = None
+            try:
+                from .linuxarm32 import aardvark as api
+            except ImportError:
+                try:
+                    from .linuxarm64 import aardvark as api
+                except ImportError:
+                    api = None
 elif sys.platform.startswith('win32'):
     try:
         from .win32 import aardvark as api
@@ -15,7 +21,10 @@ elif sys.platform.startswith('win32'):
         try:
             from .win64 import aardvark as api
         except ImportError:
-            api = None
+            try:
+                from .winarm import aardvark as api
+            except ImportError:
+                api = None
 elif sys.platform.startswith('darwin'):
     try:
         from .osx64 import aardvark as api
