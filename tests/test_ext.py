@@ -3,4 +3,4 @@
 import pyaardvark
 
 def test_api_version():
-    assert pyaardvark.api_version() == '5.70'
+    assert pyaardvark.api_version() == '6.00'
