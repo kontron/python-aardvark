@@ -45,6 +45,12 @@ Phase. Linux, Windows, and OSX are supported.
 
 The last version with python 2.7 support is 0.7.1.
 
+### Monitor support
+
+Total Phase removed the monitor support in their binary modules in version 6.00.
+The last pyaardvark version which use the old binaries and thus still support
+montoring is 0.7.x.
+
 ## Contributing
 
 Contributions are always welcome. You may send patches directly (eg. `git
