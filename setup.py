@@ -37,6 +37,7 @@ with open('README.md') as f:
 setup(name = name,
         version = version,
         description = 'Total Phase Aardvark library',
+        long_description_content_type = 'text/markdown',
         long_description = readme,
         author = 'Michael Walle',
         author_email = 'michael.walle@kontron.com',
