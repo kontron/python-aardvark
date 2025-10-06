@@ -4,7 +4,7 @@
 ![PyPiVersion](https://badge.fury.io/py/pyaardvark.svg)
 ![Python versions](https://img.shields.io/pypi/pyversions/pyaardvark.svg)
 
-The [Total Phase](http://www.totalphase.com) Aardvark is an USB I²C/SPI
+The [Total Phase](https://www.totalphase.com) Aardvark is an USB I²C/SPI
 host adapter.
 
 ## Rationale
@@ -33,7 +33,7 @@ Instead, this binding tries to be more pythonic.
 ## Documentation
 
 You can find the most up to date documentation at:
-<http://pyaardvark.rtfd.org>
+<https://pyaardvark.rtfd.org>
 
 ## Requirements
 
@@ -59,7 +59,7 @@ send-email`), do a github pull request or just file an issue.
 If you are doing code changes or additions please:
 - respect the coding style (eg. PEP8),
 - provide well-formed commit message (see [this blog
-  post](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).)
+  post](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html).)
 - add a Signed-off-by line (eg. `git commit -s`)
 
 ## License

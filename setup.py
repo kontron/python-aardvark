@@ -42,7 +42,7 @@ setup(name = name,
         author = 'Michael Walle',
         author_email = 'michael.walle@kontron.com',
         packages = find_packages(),
-        url = 'http://github.com/kontron/python-aardvark',
+        url = 'https://github.com/kontron/python-aardvark',
         license = 'LGPLv2+',
         classifiers = [
             'Development Status :: 3 - Alpha',
